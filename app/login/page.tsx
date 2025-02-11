@@ -1,25 +1,26 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { login } from '@/services/login';
-
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { login } from '@/services/auth';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const router = useRouter()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
   
     try {
       const data = await login(email, password);
@@ -28,10 +29,21 @@ export default function LoginPage() {
       if (data.token) {
         localStorage.setItem('token', data.token);
       }
-  
-      router.push('/profile');
-    } catch (err) {
-      setError('Geçersiz e-posta veya şifre')
+
+      const storedName = localStorage.getItem('user');
+      const username = localStorage.getItem('user');
+
+      if (username) {
+        router.push(`/profile/${username}`);
+      }
+
+      router.refresh();
+
+    } catch (err: any) {
+      console.error('Giriş hatası:', err);
+      setError(err.message || 'Geçersiz e-posta veya şifre');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,8 +82,8 @@ export default function LoginPage() {
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
-              <Button type="submit" className="w-full">
-                Giriş Yap
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
               </Button>
             </div>
           </form>
@@ -86,6 +98,5 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
-

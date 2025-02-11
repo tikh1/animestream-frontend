@@ -4,7 +4,7 @@ export const API_LOGIN = `${API_BASE}/login`;
 
 export const API_REGISTER = `${API_BASE}/register`;
 
-export const API_ME = `${API_BASE}/me`;
+export const API_ME = `${API_BASE}/user`;
 
 export const API_AVATAR = `${API_BASE}/user/avatar`;
 

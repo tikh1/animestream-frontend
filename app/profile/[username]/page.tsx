@@ -15,23 +15,20 @@ import { UserStats } from "@/components/profile/UserStats"
 import { UserSettings } from "@/components/profile/UserSettings"
 import { Camera } from "lucide-react"
 import { UserComments } from "@/components/profile/UserComments"
-
-// Simulating current user - In real app, this would come from your auth system
-const currentUser = {
-  username: "aliengin",
-  email: "aliengin@example.com",
-}
+import useLocalStorage from "@/hooks/useLocalStorage"
 
 export default function ProfilePage() {
+  const [username, setUserName] = useLocalStorage('user', '');
+  const [email, setEmail] = useLocalStorage('email', '');
+
   const params = useParams()
-  const username = params.username as string
 
   // Check if the current user is viewing their own profile
-  const isOwnProfile = currentUser.username === username
+  const isOwnProfile = params.username === username
 
   const [userData, setUserData] = useState({
     username: username,
-    email: isOwnProfile ? currentUser.email : "",
+    email: isOwnProfile ? email : "",
     bio: "Anime tutkunu ve manga koleksiyoncusu. Favori türlerim: Shounen, Seinen ve Slice of Life.",
     avatarUrl: "/placeholder.svg?height=200&width=200",
   })

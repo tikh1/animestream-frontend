@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { register } from '@/services/register';
+import { register } from '@/services/auth';  // auth servisinden register fonksiyonunu alıyoruz.
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('')
@@ -21,14 +21,19 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-  
-    try {
-      const data = await register(email, username, password, confirmPassword);
-      console.log('Giriş başarılı:', data);
 
-      router.push('/profile');
+    if (password !== confirmPassword) {
+      setError('Şifreler uyuşmuyor');
+      return;
+    }
+
+    try {
+      const data = await register(email, username, password, confirmPassword);  // register fonksiyonunu auth servisinden çağırıyoruz.
+      console.log('Kayıt başarılı:', data);
+
+      router.push(`/profile/${username}`);
     } catch (err) {
-      setError('Geçersiz e-posta veya şifre')
+      setError('Kayıt hatası, lütfen tekrar deneyin.');
     }
   };
 
@@ -102,6 +107,5 @@ export default function RegisterPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
-
