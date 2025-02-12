@@ -16,6 +16,8 @@ import { UserSettings } from "@/components/profile/UserSettings"
 import { Camera } from "lucide-react"
 import { UserComments } from "@/components/profile/UserComments"
 import useLocalStorage from "@/hooks/useLocalStorage"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+
 
 export default function ProfilePage() {
   const [username, setUserName] = useLocalStorage('user', '');
@@ -35,6 +37,7 @@ export default function ProfilePage() {
 
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState("stats")
+  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -93,13 +96,14 @@ export default function ProfilePage() {
                   <AvatarFallback>{userData.username[0]}</AvatarFallback>
                 </Avatar>
                 {isOwnProfile && (
-                  <Label
-                    htmlFor="avatar"
-                    className="absolute bottom-0 right-0 bg-background/50 dark:bg-background/80 text-foreground dark:text-foreground backdrop-blur-sm rounded-full p-2 cursor-pointer hover:bg-background/70 dark:hover:bg-background/90 transition-colors shadow-md"
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute bottom-0 right-0 bg-background/50 dark:bg-background/80 text-foreground dark:text-foreground backdrop-blur-sm rounded-full p-2 hover:bg-background/70 dark:hover:bg-background/90 transition-colors shadow-md"
+                    onClick={() => setIsAvatarDialogOpen(true)}
                   >
                     <Camera className="h-5 w-5" />
-                    <Input type="file" id="avatar" className="hidden" onChange={handleAvatarChange} accept="image/*" />
-                  </Label>
+                  </Button>
                 )}
               </div>
               <h2 className="text-3xl font-bold text-center mb-2">{userData.username}</h2>
@@ -113,6 +117,56 @@ export default function ProfilePage() {
                 </Button>
               )}
             </div>
+            <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Change Profile Picture</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Current Avatar</Label>
+                      <div className="mt-2 border rounded-lg overflow-hidden">
+                        <img
+                          src={userData.avatarUrl || "/placeholder.svg"}
+                          alt="Current Avatar"
+                          className="w-full h-auto"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="new-avatar">New Avatar</Label>
+                      <div className="mt-2 border rounded-lg overflow-hidden">
+                        <img
+                          src={userData.avatarUrl || "/placeholder.svg"}
+                          alt="New Avatar Preview"
+                          className="w-full h-auto"
+                        />
+                      </div>
+                      <Input
+                        id="new-avatar"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        onClick={() => document.getElementById("new-avatar")?.click()}
+                        className="mt-2 w-full"
+                        variant="secondary"
+                      >
+                        Resim Seç
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={() => setIsAvatarDialogOpen(false)}>Cancel</Button>
+                  <Button type="submit">Save changes</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Content Section */}
