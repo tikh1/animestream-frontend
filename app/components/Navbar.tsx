@@ -28,21 +28,25 @@ const animeList = [
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null)
   const [currentNotifications, setCurrentNotifications] = useState(notifications)
   const [currentUser, setCurrentUser] = useState({ username: "" })
   const [searchTerm, setSearchTerm] = useState("")
   const [searchResults, setSearchResults] = useState([])
 
-  useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (token) {
-      setIsLoggedIn(true)
-      setCurrentUser({ username: localStorage.getItem("user") || "" })
-    }
-  }, [])
-
   const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    
+    if (token) {
+      setIsLoggedIn(true);
+      setCurrentUser({ username: localStorage.getItem("user") || "" });
+    } else {
+      setIsLoggedIn(false);
+    }
+  }, [localStorage.getItem("token")]);
+  
 
   const handleLogout = () => {
     logout();
@@ -177,10 +181,14 @@ export default function Navbar() {
               </Button>
             </div>
           ) : (
-            <>
-              <Link href="/login"><Button variant="outline" size="sm">Giriş Yap</Button></Link>
-              <Link href="/register"><Button size="sm">Kayıt Ol</Button></Link>
-            </>
+            <div className="flex space-x-2">
+              <Link href="/login">
+                <Button variant="outline" size="sm">Giriş Yap</Button>
+              </Link>
+              <Link href="/register">
+                <Button size="sm">Kayıt Ol</Button>
+              </Link>
+            </div>
           )}
         </div>
       </div>
