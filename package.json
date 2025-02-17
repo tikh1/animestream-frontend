@@ -60,7 +60,7 @@
     "zod": "latest",
     "@emotion/is-prop-valid": "latest",
     "tailwindcss": "latest",
-    "framer-motion": "4.1.17",
+    "framer-motion": "latest",
     "classnames": "latest",
     "tailwind-variants": "latest"
   },

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Menu, X, User, Bell, HelpCircle, LogOut } from "lucide-react"
+import { Search, X, User, Bell, HelpCircle, LogOut } from "lucide-react"
 import { ThemeToggle } from "./ThemeToggle"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
