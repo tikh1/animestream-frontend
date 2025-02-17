@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { register } from '@/services/auth';  // auth servisinden register fonksiyonunu alıyoruz.
+import { register } from '@/services/auth';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('')
@@ -28,10 +28,22 @@ export default function RegisterPage() {
     }
 
     try {
-      const data = await register(email, username, password, confirmPassword);  // register fonksiyonunu auth servisinden çağırıyoruz.
+      const data = await register(email, username, password, confirmPassword);
       console.log('Kayıt başarılı:', data);
 
-      router.push(`/profile/${username}`);
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+
+      const storedName = localStorage.getItem('user');
+      const usernametoken = localStorage.getItem('user');
+
+      if (username) {
+        router.push(`/profile/${username}`);
+      }
+
+      router.refresh();
+
     } catch (err) {
       setError('Kayıt hatası, lütfen tekrar deneyin.');
     }
