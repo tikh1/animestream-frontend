@@ -10,33 +10,7 @@ import { Star, Play, TrendingUp, Eye, Heart } from "lucide-react"
 import Link from "next/link"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 
-function smoothScrollTo(to, duration) {
-  const element = window.scrollingElement || document.documentElement,
-    start = element.scrollTop,
-    change = to - start,
-    startDate = +new Date()
-
-  const easeInOutQuad = (t, b, c, d) => {
-    t /= d / 2
-    if (t < 1) return (c / 2) * t * t + b
-    t--
-    return (-c / 2) * (t * (t - 2) - 1) + b
-  }
-
-  const animateScroll = () => {
-    const currentDate = +new Date()
-    const currentTime = currentDate - startDate
-    element.scrollTop = Number.parseInt(easeInOutQuad(currentTime, start, change, duration))
-    if (currentTime < duration) {
-      requestAnimationFrame(animateScroll)
-    } else {
-      element.scrollTop = to
-    }
-  }
-  animateScroll()
-}
-
-function UserComments({ animeId }) {
+function UserComments() {
   const [review, setReview] = useState({ user: "", comment: "", rating: 0 })
 
   useEffect(() => {
@@ -51,7 +25,7 @@ function UserComments({ animeId }) {
       setReview(reviews[Math.floor(Math.random() * reviews.length)])
     }, 3000)
     return () => clearInterval(interval)
-  }, [animeId])
+  }, [])
 
   return (
     <div className="mt-4 p-4 bg-secondary/10 rounded-lg">
@@ -211,18 +185,8 @@ export default function TrendingPage() {
   const [activeTab, setActiveTab] = useState("trending")
   const [selectedAnime, setSelectedAnime] = useState(trendingAnime[0])
 
-  useEffect(() => {
-    const trendingContent = document.getElementById("trending-content")
-    if (trendingContent) {
-      trendingContent.scrollIntoView({ behavior: "smooth" })
-    }
-  }, [])
-
   const handleAnimeSelect = (anime) => {
     setSelectedAnime(anime)
-    const headerHeight = document.querySelector("h1")?.offsetHeight || 0
-    const scrollPosition = headerHeight + 96 // 96px ekstra boşluk için
-    smoothScrollTo(scrollPosition, 1000)
   }
 
   const sortedAnime = [...trendingAnime].sort((a, b) => {
@@ -299,7 +263,7 @@ export default function TrendingPage() {
                             </Badge>
                           ))}
                         </div>
-                        <UserComments animeId={selectedAnime.id} />
+                        <UserComments />
                       </div>
                       <div className="flex space-x-2">
                         <Link href={`/anime/${selectedAnime.id}`} className="flex-[2]">
