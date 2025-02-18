@@ -146,7 +146,7 @@ export default function AboutPage() {
                 Frontend Developer & UI Designer
               </motion.p>
               <motion.div variants={containerVariants} className="flex justify-center md:justify-end space-x-6">
-                <SocialIcon href="https://github.com/tikhi" icon={Github} color="text-black" />
+                <SocialIcon href="https://github.com/tikh1" icon={Github} color="text-black" />
                 <SocialIcon href="https://twitter.com/tikhi" icon={Twitter} color="text-black" />
                 <SocialIcon href="https://instagram.com/tikhi" icon={Instagram} color="text-black" />
               </motion.div>
