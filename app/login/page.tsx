@@ -17,6 +17,16 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const storedName = localStorage.getItem('user');
+      if (storedName) {
+        router.push(`/profile/${storedName}`);
+      }
+    }
+  }, [router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -31,10 +41,8 @@ export default function LoginPage() {
       }
 
       const storedName = localStorage.getItem('user');
-      const username = localStorage.getItem('user');
-
-      if (username) {
-        router.push(`/profile/${username}`);
+      if (storedName) {
+        router.push(`/profile/${storedName}`);
       }
 
       router.refresh();

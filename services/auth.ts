@@ -3,6 +3,7 @@ import { API_LOGIN, API_REGISTER, API_ME } from '@/lib/api';
 export interface User {
   id: number;
   email: string;
+  roles: string[];
   name: string;
   avatar?: string;
 }
@@ -19,7 +20,10 @@ export const login = async (email: string, password: string) => {
 
     const data = await response.json();
     const token = data.data.token;
+    const roles = data.data.roles?.map((role: any) => role.name) || [];
+
     localStorage.setItem('token', token);
+    localStorage.setItem('roles', JSON.stringify(roles));
 
     await fetchAndStoreUser(token);
     return data;
@@ -33,7 +37,7 @@ export const register = async (email: string, name: string, password: string, pa
   try {
     const response = await fetch(API_REGISTER, {
       method: 'POST',
-      headers: { 'Accept': 'application/json',  'Content-type': 'application/json' },
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, name, password, password_confirmation }),
     });
 
@@ -41,7 +45,10 @@ export const register = async (email: string, name: string, password: string, pa
 
     const data = await response.json();
     const token = data.data.token;
+    const roles = data.data.roles?.map((role: any) => role.name) || [];
+
     localStorage.setItem('token', token);
+    localStorage.setItem('roles', JSON.stringify(roles));
 
     await fetchAndStoreUser(token);
     return data;
@@ -62,21 +69,24 @@ export const getUser = async (token: string): Promise<User> => {
 };
 
 const fetchAndStoreUser = async (token: string) => {
-    try {
-      const userData = await getUser(token);
-      const name = userData.data.name;
-      const email = userData.data.email;
-      localStorage.setItem('user', name);
-      localStorage.setItem('email', email);
-    } catch (error) {
-      console.error('Kullanıcı bilgisi alınamadı:', error);
-    }
-  };
-  
+  try {
+    const userData = await getUser(token);
+    const name = userData.data.name;
+    const email = userData.data.email;
+    const roles = userData.data.roles?.map((role: any) => role.name) || [];
 
+    localStorage.setItem('user', name);
+    localStorage.setItem('email', email);
+    localStorage.setItem('roles', JSON.stringify(roles));
+  } catch (error) {
+    console.error('Kullanıcı bilgisi alınamadı:', error);
+  }
+};
 
 export const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('email');
-  };
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  localStorage.removeItem('email');
+  localStorage.removeItem('roles');
+
+};

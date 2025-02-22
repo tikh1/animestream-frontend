@@ -1,7 +1,7 @@
 import { ThemeProvider } from './components/ThemeProvider'
 import dynamic from 'next/dynamic';
 const Navbar = dynamic(() => import("./components/Navbar"), { ssr: false });
-import SecondaryNav from './components/SecondaryNav'
+const SecondaryNav = dynamic(() => import("./components/SecondaryNav"), { ssr: false });
 import Footer from './components/Footer'
 import { Metadata } from 'next'
 import './globals.css'

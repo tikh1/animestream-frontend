@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -9,22 +9,21 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { tv } from "tailwind-variants"
 
-const glowKeyframes = {
-  "0%, 100%": { textShadow: "0 0 4px rgba(var(--primary-rgb), 0.3)" },
-  "50%": { textShadow: "0 0 8px rgba(var(--primary-rgb), 0.6)" },
-}
-
-const glowAnimation = {
-  animation: "glow 3s ease-in-out infinite",
-  "@keyframes glow": glowKeyframes,
-}
-
-const isAdmin = () => false // Replace this function with your actual authentication logic
-const isUser = () => false // Replace this function with your actual authentication logic
-
 export default function SecondaryNav() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    const token = localStorage.getItem("token")
+    const roles = JSON.parse(localStorage.getItem("roles") || "[]")
+
+    setIsLoggedIn(!!token)
+    
+    setIsAdmin(roles.includes("admin"))
+
+  }, [localStorage.getItem("token")])
 
   const navItems = [
     { label: "Ana Sayfa", href: "/" },
@@ -64,16 +63,14 @@ export default function SecondaryNav() {
             ))}
           </ul>
           <div className="hidden md:flex items-center gap-2 ml-auto">
-            {isAdmin() && (
+            {isAdmin && (
               <Link href="/admin" className={linkStyles()}>
                 Admin Panel
               </Link>
             )}
-            {!isUser() && (
-              <Link href="/plans" className={linkStyles()}>
-                Planlar
-              </Link>
-            )}
+            <Link href="/plans" className={linkStyles()}>
+              Planlar
+            </Link>
           </div>
         </div>
 
@@ -110,7 +107,7 @@ export default function SecondaryNav() {
                         {item.label}
                       </Link>
                     ))}
-                    {isAdmin() && (
+                    {isAdmin && (
                       <Link
                         href="/admin"
                         className={cn(
@@ -124,20 +121,18 @@ export default function SecondaryNav() {
                         Admin Panel
                       </Link>
                     )}
-                    {!isUser() && (
-                      <Link
-                        href="/plans"
-                        className={cn(
-                          "flex items-center justify-center px-3 py-2.5 text-sm font-medium transition-colors rounded-lg",
-                          pathname === "/plans"
-                            ? "bg-primary text-primary-foreground"
-                            : "text-foreground hover:bg-accent",
-                        )}
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Planlar
-                      </Link>
-                    )}
+                    <Link
+                      href="/plans"
+                      className={cn(
+                        "flex items-center justify-center px-3 py-2.5 text-sm font-medium transition-colors rounded-lg",
+                        pathname === "/plans"
+                          ? "bg-primary text-primary-foreground"
+                          : "text-foreground hover:bg-accent",
+                      )}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Planlar
+                    </Link>
                   </div>
                 )}
               </DropdownMenuContent>
@@ -148,4 +143,3 @@ export default function SecondaryNav() {
     </div>
   )
 }
-
