@@ -1,10 +1,12 @@
-const API_BASE = 'https://api.turkani.me/api';
+const API_BASE = 'http://animestream.test/api';
 
 export const API_LOGIN = `${API_BASE}/login`;
 
 export const API_REGISTER = `${API_BASE}/register`;
 
 export const API_ME = `${API_BASE}/user`;
+
+export const API_PROFILE = `${API_BASE}/profile`;
 
 export const API_AVATAR = `${API_BASE}/user/avatar`;
 

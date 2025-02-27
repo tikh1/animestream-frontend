@@ -15,29 +15,47 @@ import { UserStats } from "@/components/profile/UserStats"
 import { UserSettings } from "@/components/profile/UserSettings"
 import { Camera } from "lucide-react"
 import { UserComments } from "@/components/profile/UserComments"
-import useLocalStorage from "@/hooks/useLocalStorage"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import uploadAvatar from "@/services/profile/upload_avatar"
+import { UserProfile } from "@/services/profile/profile"
 
 
 export default function ProfilePage() {
-  const [username, setUserName] = useLocalStorage('user', '');
-  const [email, setEmail] = useLocalStorage('email', '');
-
   const params = useParams()
-
-  // Check if the current user is viewing their own profile
-  const isOwnProfile = params.username === username
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   const [userData, setUserData] = useState({
-    username: username,
-    email: isOwnProfile ? email : "",
-    bio: "Anime tutkunu ve manga koleksiyoncusu. Favori türlerim: Shounen, Seinen ve Slice of Life.",
-    avatarUrl: "/placeholder.svg?height=200&width=200",
+    username: "" || params.username,
+    email: "",
+    bio: "" || "Anime tutkunu ve manga koleksiyoncusu.",
+    avatarUrl: "",
   })
 
   const [isEditing, setIsEditing] = useState(false)
   const [activeTab, setActiveTab] = useState("stats")
   const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false)
+  const [newAvatar, setNewAvatar] = useState<File | null>(null)
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    setIsOwnProfile(params.username === storedUser);
+
+    const fetchUserData = async () => {
+      try {
+        const data = await UserProfile(Array.isArray(params.username) ? params.username[0] : params.username);
+        setUserData({
+          username: data.name,
+          email: data.email,
+          bio: data.bio || "Anime tutkunu ve manga koleksiyoncusu.",
+          avatarUrl: data.avatar || "/placeholder.svg?height=200&width=200",
+        });
+      } catch (error) {
+        console.error("Kullanıcı bilgileri alınamadı:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [params.username]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -47,6 +65,7 @@ export default function ProfilePage() {
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setNewAvatar(file)
       const reader = new FileReader()
       reader.onloadend = () => {
         setUserData((prev) => ({ ...prev, avatarUrl: reader.result as string }))
@@ -55,23 +74,34 @@ export default function ProfilePage() {
     }
   }
 
-  // Define available tabs based on profile ownership
+  const handleSaveChanges = async () => {
+    if (newAvatar) {
+      try {
+        const response = await uploadAvatar(newAvatar)
+        const updatedAvatarUrl = response.avatarUrl
+        setUserData((prev) => ({ ...prev, avatarUrl: updatedAvatarUrl }))
+        setIsAvatarDialogOpen(false)
+      } catch (error) {
+        alert("Resim yükleme başarısız: " + error.message)
+      }
+    } else {
+      setIsAvatarDialogOpen(false)
+    }
+  }
+
   const getTabs = () => {
     const commonTabs = [{ id: "stats", label: "İstatistikler" }]
-
     const privateTabs = [
       { id: "comments", label: "Yorumları" },
       { id: "history", label: "İzleme Geçmişi" },
       { id: "favorites", label: "Favoriler" },
       { id: "settings", label: "Ayarlar" },
     ]
-
     return isOwnProfile ? [...commonTabs, ...privateTabs] : commonTabs
   }
 
   const tabs = getTabs()
 
-  // If active tab is not available for current view, reset to stats
   useEffect(() => {
     if (!tabs.find((tab) => tab.id === activeTab)) {
       setActiveTab("stats")
@@ -163,7 +193,7 @@ export default function ProfilePage() {
                 </div>
                 <DialogFooter>
                   <Button onClick={() => setIsAvatarDialogOpen(false)}>Cancel</Button>
-                  <Button type="submit">Save changes</Button>
+                  <Button type="button" onClick={handleSaveChanges}>Save changes</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -262,4 +292,3 @@ export default function ProfilePage() {
     </div>
   )
 }
-

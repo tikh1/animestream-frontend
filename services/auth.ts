@@ -1,10 +1,10 @@
 import { API_LOGIN, API_REGISTER, API_ME } from '@/lib/api';
 
 export interface User {
-  id: number;
   email: string;
   roles: string[];
   name: string;
+  bio?: string;
   avatar?: string;
 }
 
@@ -58,22 +58,30 @@ export const register = async (email: string, name: string, password: string, pa
   }
 };
 
-export const getUser = async (token: string): Promise<User> => {
+export const me = async (token: string): Promise<User> => {
   const response = await fetch(API_ME, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
   if (!response.ok) throw new Error('Yetkisiz erişim');
 
-  return await response.json();
+  const userData = await response.json();
+
+  const { name, email, bio, avatar, roles } = userData.data;
+
+  return {
+    name,
+    email,
+    bio: bio || '',
+    roles: roles?.map((role: any) => role.name) || [],
+    avatar: avatar || '',
+  };
 };
 
 const fetchAndStoreUser = async (token: string) => {
   try {
-    const userData = await getUser(token);
-    const name = userData.data.name;
-    const email = userData.data.email;
-    const roles = userData.data.roles?.map((role: any) => role.name) || [];
+    const userData = await me(token);
+    const { name, email, roles, avatar } = userData;
 
     localStorage.setItem('user', name);
     localStorage.setItem('email', email);
