@@ -1,105 +1,94 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MultiSelect } from "@/components/ui/multi-select"
-import { AnimeCard } from "@/components/AnimeCard"
-import { Pagination } from "./components/Pagination"
+import { useState, useEffect, useCallback } from "react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { AnimeCard } from "@/components/AnimeCard";
+import { Pagination } from "./components/Pagination";
+import { AnimeList } from "@/services/anime/anime_list";
 
-// Örnek anime verileri - Her animeye 4 ekstra tür eklendi
-const animeData = [
-  {
-    id: 1,
-    title: "Attack on Titan",
-    genre: ["Action", "Dark Fantasy", "Post-apocalyptic", "Mystery", "Military Fiction", "Horror"],
-    year: 2013,
-    rating: 9.0,
-    seasons: 4,
-    episodesPerSeason: 25,
-  },
-  {
-    id: 2,
-    title: "Death Note",
-    genre: ["Mystery", "Psychological Thriller", "Supernatural", "Crime Fiction", "Drama", "Detective"],
-    year: 2006,
-    rating: 9.0,
-    seasons: 1,
-    episodesPerSeason: 37,
-  },
-  {
-    id: 3,
-    title: "Fullmetal Alchemist: Brotherhood",
-    genre: ["Adventure", "Dark Fantasy", "Steampunk", "Military Fiction", "Comedy", "Drama"],
-    year: 2009,
-    rating: 9.1,
-    seasons: 1,
-    episodesPerSeason: 64,
-  },
-  {
-    id: 4,
-    title: "One Punch Man",
-    genre: ["Action", "Comedy", "Superhero", "Parody", "Science Fiction", "Martial Arts"],
-    year: 2015,
-    rating: 8.8,
-    seasons: 2,
-    episodesPerSeason: 12,
-  },
-  {
-    id: 5,
-    title: "My Hero Academia",
-    genre: ["Superhero", "Action", "School Life", "Comedy", "Drama", "Science Fiction"],
-    year: 2016,
-    rating: 8.4,
-    seasons: 6,
-    episodesPerSeason: 25,
-  },
-]
+interface Anime {
+  id: number;
+  name: string;
+  genre: string[];
+  year: number;
+  rating: number;
+  seasons: number;
+  episodesPerSeason: number;
+}
 
 export default function AnimeListPage() {
-  const [animes] = useState(animeData)
-  const [filteredAnimes, setFilteredAnimes] = useState(animeData)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedGenres, setSelectedGenres] = useState<string[]>([])
-  const [sortBy, setSortBy] = useState("title")
-  const itemsPerPage = 10
+  const [animes, setAnimes] = useState<Anime[]>([]);
+  const [filteredAnimes, setFilteredAnimes] = useState<Anime[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState("title");
+  const itemsPerPage = 10;
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await AnimeList();
+      console.log("Anime List:", data);
+
+      setAnimes(data);
+      setFilteredAnimes(data);
+    } catch (error) {
+      console.error("Hata oluştu:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let result = [...animes]
+    fetchData();
+  }, [fetchData]);
 
-    // Search filter
+  useEffect(() => {
+    let result = [...animes];
+
     if (searchTerm) {
-      result = result.filter((anime) => anime.title.toLowerCase().includes(searchTerm.toLowerCase()))
+      result = result.filter((anime) =>
+        anime.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
-    // Genre filter
     if (selectedGenres.length > 0) {
-      result = result.filter((anime) => selectedGenres.some((genre) => anime.genre.includes(genre)))
+      result = result.filter((anime) =>
+        selectedGenres.some((genre) => anime.genre.includes(genre))
+      );
     }
 
-    // Sorting
     result.sort((a, b) => {
-      if (sortBy === "title") return a.title.localeCompare(b.title)
-      if (sortBy === "year") return b.year - a.year
-      if (sortBy === "rating") return b.rating - a.rating
-      return 0
-    })
+      if (sortBy === "name") return a.name.localeCompare(b.name);
+      if (sortBy === "year") return Number(b.year) - Number(a.year);
+      if (sortBy === "rating") return b.rating - a.rating;
+      return 0;
+    });
 
-    setFilteredAnimes(result)
-    setCurrentPage(1)
-  }, [animes, searchTerm, selectedGenres, sortBy])
+    setFilteredAnimes(result);
+    setCurrentPage(1);
+  }, [searchTerm, selectedGenres, sortBy, animes]);
 
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = filteredAnimes.slice(indexOfFirstItem, indexOfLastItem)
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredAnimes.slice(indexOfFirstItem, indexOfLastItem);
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
+  if (loading) return <p className="text-center text-xl">Yükleniyor...</p>;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Anime Listesi</h1>
-
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <Input
           type="text"
@@ -108,7 +97,6 @@ export default function AnimeListPage() {
           onChange={(e) => setSearchTerm(e.target.value)}
           className="md:w-1/3"
         />
-
         <Select value={sortBy} onValueChange={setSortBy}>
           <SelectTrigger className="md:w-1/4">
             <SelectValue placeholder="Sıralama" />
@@ -119,7 +107,6 @@ export default function AnimeListPage() {
             <SelectItem value="rating">Puan</SelectItem>
           </SelectContent>
         </Select>
-
         <MultiSelect
           options={[
             { value: "Action", label: "Aksiyon" },
@@ -142,27 +129,28 @@ export default function AnimeListPage() {
           className="md:w-1/3"
         />
       </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-        {currentItems.map((anime) => (
-          <AnimeCard
-            key={anime.id}
-            anime={{
-              id: anime.id,
-              title: anime.title,
-              genre: anime.genre,
-              year: anime.year,
-              rating: anime.rating,
-              seasons: anime.seasons,
-              episodesPerSeason: anime.episodesPerSeason,
-            }}
-            variant="default"
-            showRank={false}
-            maxGenres={3}
-          />
-        ))}
-      </div>
-
+      {filteredAnimes.length === 0 ? (
+        <p className="text-center text-xl">Sonuç bulunamadı.</p>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          {currentItems.map((anime) => (
+            <AnimeCard
+              key={anime.id}
+              anime={{
+                id: anime.id,
+                name: anime.name, 
+                genre: anime.genre,
+                year: anime.year,
+                rating: anime.rating,
+                seasons: anime.seasons,
+                episodesPerSeason: anime.episodesPerSeason,
+              }}
+              variant="default"
+              showRank={false}
+            />
+          ))}
+        </div>
+      )}
       <Pagination
         itemsPerPage={itemsPerPage}
         totalItems={filteredAnimes.length}
@@ -170,6 +158,5 @@ export default function AnimeListPage() {
         currentPage={currentPage}
       />
     </div>
-  )
+  );
 }
-

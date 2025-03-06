@@ -1,27 +1,47 @@
 import { API_ANIMES } from '@/lib/api';
 
-export interface UserProfile {
-  name: string;
-  email: string;
-  avatar?: string;
-  bio?: string;
+export interface Episode {
+    id: number;
+    name: string;
+    slug: string;
+    summary: string;
+    season_id: number;
+    video_id: number;
+    duration: number;
+}
+export interface Season {
+    id: number;
+    name: string;
+    episodes: Episode[];
 }
 
-export const UserProfile = async (username: string): Promise<UserProfile> => {
+export interface AnimeList {
+  id: number;
+  name: string;
+  imdb_score: number;
+  genres: string[];
+  seasons: Season[];
+}
+
+export const AnimeList = async ()=> {
   
   const response = await fetch(`${API_ANIMES}`);
 
-  if (!response.ok) throw new Error('Kullanıcı bilgileri alınamadı.');
+  if (!response.ok) throw new Error('Anime bilgileri alınamadı.');
 
-  const userData = await response.json();
-  console.log("asdasd:", userData);
+  const animelistData = await response.json();
+  
+  //console.log("anime_list_service:", animelistData.data.animes);
+  
+  //const episodes = seasons?.[0]?.episodes ?? [];
 
-  const { name, email, bio, avatar } = userData.user;
-
-  return {
-    name: name || username,
-    email,
-    bio: bio || '',
-    avatar,
-  };
+  return animelistData.data.animes.map((anime: any) => ({
+    id: anime.id,
+    name: anime.name,
+    genre: anime.genres || [],
+    year: anime.seasons?.[0]?.year || "Bilinmiyor",
+    rating: Number(anime.imdb_score) || 0,
+    seasons: anime.seasons?.length || 1,
+    episodesPerSeason: anime.seasons?.[0]?.episodes?.length || 1,
+  }));
 };

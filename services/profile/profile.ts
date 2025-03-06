@@ -14,7 +14,7 @@ export const UserProfile = async (username: string): Promise<UserProfile> => {
   if (!response.ok) throw new Error('Kullanıcı bilgileri alınamadı.');
 
   const userData = await response.json();
-  console.log("asdasd:", userData);
+  //console.log("profile_service:", userData);
 
   const { name, email, bio, avatar } = userData.user;
 

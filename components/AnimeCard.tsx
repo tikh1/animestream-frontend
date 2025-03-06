@@ -6,7 +6,7 @@ import { motion } from "framer-motion"
 interface AnimeCardProps {
   anime: {
     id: number
-    title: string
+    name: string
     genre: string[]
     year?: number
     rating: number
@@ -15,8 +15,8 @@ interface AnimeCardProps {
     weeklyViews?: number
     episodes?: number
     status?: string
-    seasons?: number // Yeni eklenen
-    episodesPerSeason?: number // Yeni eklenen
+    seasons?: number
+    episodesPerSeason?: number
   }
   variant?: "default" | "compact" | "featured"
   showRank?: boolean
@@ -33,7 +33,7 @@ export function AnimeCard({
   showStatus = false,
   className = "",
 }: AnimeCardProps) {
-  const imageUrl = anime.image || `/placeholder.svg?height=450&width=300&text=${encodeURIComponent(anime.title)}`
+  const imageUrl = anime.image || `/placeholder.svg?height=450&width=300&text=${encodeURIComponent(anime.name)}`
 
   return (
     <Link href={`/anime/${anime.id}`} className="block h-full">
@@ -43,7 +43,7 @@ export function AnimeCard({
         <div className={`relative overflow-hidden ${variant === "compact" ? "aspect-[1/1]" : "aspect-[3/4]"}`}>
           <img
             src={imageUrl || "/placeholder.svg"}
-            alt={anime.title}
+            alt={anime.name}
             className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-70" />
@@ -70,7 +70,7 @@ export function AnimeCard({
                 variant === "compact" ? "text-base" : "text-lg md:text-xl"
               } line-clamp-2 mb-1`}
             >
-              {anime.title}
+              {anime.name}
             </h3>
             {anime.seasons && anime.episodesPerSeason && (
               <p className="text-xs md:text-sm text-gray-300">

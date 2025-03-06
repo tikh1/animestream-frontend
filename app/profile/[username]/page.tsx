@@ -49,6 +49,7 @@ export default function ProfilePage() {
           bio: data.bio || "Anime tutkunu ve manga koleksiyoncusu.",
           avatarUrl: data.avatar || "/placeholder.svg?height=200&width=200",
         });
+        console.log("profile_service:", data);
       } catch (error) {
         console.error("Kullanıcı bilgileri alınamadı:", error);
       }

@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 interface AnimeCardProps {
   anime: {
     id: number
-    title: string
+    name: string
     genre: string[]
     year?: number
     rating: number
@@ -35,7 +35,7 @@ export function AnimeCard({
   maxGenres = 2,
   className = "",
 }: AnimeCardProps) {
-  const imageUrl = anime.image || `/placeholder.svg?height=450&width=300&text=${encodeURIComponent(anime.title)}`
+  const imageUrl = anime.image || `/placeholder.svg?height=450&width=300&text=${encodeURIComponent(anime.name)}`
 
   return (
     <Card
@@ -44,7 +44,7 @@ export function AnimeCard({
       <div className={`relative overflow-hidden ${variant === "compact" ? "aspect-[1/1]" : "aspect-[1/1.2]"}`}>
         <img
           src={imageUrl || "/placeholder.svg"}
-          alt={anime.title}
+          alt={anime.name}
           className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50" />
@@ -62,7 +62,7 @@ export function AnimeCard({
       >
         <div className="space-y-2">
           <h3 className={`font-medium text-white ${variant === "compact" ? "line-clamp-1" : "line-clamp-2"}`}>
-            {anime.title}
+            {anime.name}
           </h3>
           {variant !== "compact" && (
             <div className="flex flex-wrap gap-1">
