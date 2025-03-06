@@ -17,6 +17,7 @@ interface AnimeCardProps {
     status?: string
     seasons?: number
     episodesPerSeason?: number
+    thumbnail?: string
   }
   variant?: "default" | "compact" | "featured"
   showRank?: boolean
@@ -33,7 +34,7 @@ export function AnimeCard({
   showStatus = false,
   className = "",
 }: AnimeCardProps) {
-  const imageUrl = anime.image || `/placeholder.svg?height=450&width=300&text=${encodeURIComponent(anime.name)}`
+  const imageUrl = anime.thumbnail || `/placeholder.svg?height=450&width=300&text=${encodeURIComponent(anime.name)}`
 
   return (
     <Link href={`/anime/${anime.id}`} className="block h-full">

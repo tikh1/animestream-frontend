@@ -1,18 +1,18 @@
 import { API_ANIMES } from '@/lib/api';
 
 export interface Episode {
-    id: number;
-    name: string;
-    slug: string;
-    summary: string;
-    season_id: number;
-    video_id: number;
-    duration: number;
+  id: number;
+  name: string;
+  slug: string;
+  summary: string;
+  season_id: number;
+  video_id: number;
+  duration: number;
 }
 export interface Season {
-    id: number;
-    name: string;
-    episodes: Episode[];
+  id: number;
+  name: string;
+  episodes: Episode[];
 }
 
 export interface AnimeList {
@@ -21,6 +21,7 @@ export interface AnimeList {
   imdb_score: number;
   genres: string[];
   seasons: Season[];
+  thumbnail: string;
 }
 
 export const AnimeList = async ()=> {
@@ -43,5 +44,6 @@ export const AnimeList = async ()=> {
     rating: Number(anime.imdb_score) || 0,
     seasons: anime.seasons?.length || 1,
     episodesPerSeason: anime.seasons?.[0]?.episodes?.length || 1,
+    thumbnail: anime.thumbnail || "",
   }));
 };

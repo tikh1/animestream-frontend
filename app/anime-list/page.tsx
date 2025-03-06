@@ -22,6 +22,7 @@ interface Anime {
   rating: number;
   seasons: number;
   episodesPerSeason: number;
+  thumbnail: string;
 }
 
 export default function AnimeListPage() {
@@ -144,6 +145,7 @@ export default function AnimeListPage() {
                 rating: anime.rating,
                 seasons: anime.seasons,
                 episodesPerSeason: anime.episodesPerSeason,
+                thumbnail: anime.thumbnail,
               }}
               variant="default"
               showRank={false}
