@@ -7,6 +7,7 @@ interface AnimeCardProps {
   anime: {
     id: number
     name: string
+    slug: string
     genre: string[]
     year?: number
     rating: number
@@ -37,7 +38,7 @@ export function AnimeCard({
   const imageUrl = anime.thumbnail || `/placeholder.svg?height=450&width=300&text=${encodeURIComponent(anime.name)}`
 
   return (
-    <Link href={`/anime/${anime.id}`} className="block h-full">
+    <Link href={`/anime/${anime.slug}`} className="block h-full">
       <Card
         className={`overflow-hidden transition-all duration-300 hover:shadow-lg group h-full bg-black/90 ${className}`}
       >

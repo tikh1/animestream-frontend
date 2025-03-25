@@ -17,6 +17,7 @@ import { AnimeList } from "@/services/anime/anime_list";
 interface Anime {
   id: number;
   name: string;
+  slug: string;
   genre: string[];
   year: number;
   rating: number;
@@ -136,10 +137,11 @@ export default function AnimeListPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
           {currentItems.map((anime) => (
             <AnimeCard
-              key={anime.id}
+                key={anime.id}
               anime={{
                 id: anime.id,
                 name: anime.name, 
+                slug: anime.slug,
                 genre: anime.genre,
                 year: anime.year,
                 rating: anime.rating,

@@ -247,7 +247,7 @@ export default function ProfilePage() {
                   transition={{ duration: 0.3 }}
                 >
                   <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className={`grid w-full grid-cols-${tabs.length} mb-8`}>
+                    <TabsList className="grid w-full grid-cols-5 mb-8">
                       {tabs.map((tab) => (
                         <TabsTrigger key={tab.id} value={tab.id}>
                           {tab.label}

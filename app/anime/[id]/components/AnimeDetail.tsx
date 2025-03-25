@@ -1,7 +1,9 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge"
 import { CalendarDays, Clock, Star, Pencil, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -16,32 +18,55 @@ import { Textarea } from "@/components/ui/textarea"
 import { MultiSelect } from "@/components/ui/multi-select"
 import { DatePicker } from "@/components/ui/date-picker"
 import { format } from "date-fns"
-
-interface AnimeDetailProps {
-  anime: {
-    title: string
-    image: string
-    releaseDate: string
-    duration: string
-    genres: string[]
-    description: string
-    imdbRating: number
-  }
-}
+import { AnimeDetails, AnimeData } from "@/services/anime/anime_detail";
 
 const isAdminOrMod = () => true // Replace with actual authentication logic
 
-export default function AnimeDetail({ anime }: AnimeDetailProps) {
+interface AnimeDetailparams {
+  params: {
+    slug: string;
+  };
+}
+
+export default function AnimeDetail({ params }: AnimeDetailparams) {
+  const { slug } = params;
+const [anime, setAnime] = useState<AnimeData>({} as AnimeData);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false)
-  const [formData, setFormData] = useState({
-    title: anime.title,
-    image: anime.image,
-    releaseDate: new Date(anime.releaseDate),
-    duration: anime.duration,
+    const [formData, setFormData] = useState({
+    title: anime.name,
+    image: anime.thumbnail,
+    releaseDate: new Date(anime.release_date),
+
+    // ████████  ██████  ██████   ██████  
+    //    ██    ██    ██ ██   ██ ██    ██ 
+    //    ██    ██    ██ ██   ██ ██    ██ 
+    //    ██    ██    ██ ██   ██ ██    ██ 
+    //    ██     ██████  ██████   ██████  
+    /**
+     * ! duration değeri değiştirilecek
+     */
+    //duration: anime.duration,
     genres: anime.genres,
-    description: anime.description,
-    imdbRating: anime.imdbRating,
+    description: anime.summary,
+    imdbRating: anime.imdb_score,
   })
+
+  useEffect(() => {
+    const fetchAnime = async () => {
+      try {
+        const data = await AnimeDetails(slug);
+        setAnime(data);
+      } catch (err) {
+        setError("Anime bilgileri alınamadı.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAnime();
+  }, [slug]);
+
 
   const genreOptions = [
     { label: "Action", value: "Action" },
@@ -58,20 +83,25 @@ export default function AnimeDetail({ anime }: AnimeDetailProps) {
     setOpen(false)
   }
 
+  if (loading) return <p className="text-center">Yükleniyor...</p>;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
+  if (!anime) return <p className="text-center text-red-500">Anime bulunamadı.</p>;
+  
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8">
         <div className="space-y-4">
           <img
-            src={anime.image || "/placeholder.svg"}
-            alt={anime.title}
+            src={anime.thumbnail || "/placeholder.svg"}
+            alt={anime.name}
             className="w-full rounded-lg object-cover aspect-[3/4] bg-muted"
           />
         </div>
         <div className="space-y-6">
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-bold">{anime.title}</h1>
+              <h1 className="text-3xl font-bold">{anime.name}</h1>
               {isAdminOrMod() && (
                 <Button variant="outline" size="icon" onClick={() => setOpen(true)}>
                   <Pencil className="h-4 w-4" />
@@ -81,15 +111,25 @@ export default function AnimeDetail({ anime }: AnimeDetailProps) {
             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
               <div className="flex items-center">
                 <CalendarDays className="mr-2 h-4 w-4" />
-                {anime.releaseDate}
+                {anime.release_date}
               </div>
               <div className="flex items-center">
                 <Clock className="mr-2 h-4 w-4" />
-                {anime.duration}
+                {
+                  // ████████  ██████  ██████   ██████  
+                  //    ██    ██    ██ ██   ██ ██    ██ 
+                  //    ██    ██    ██ ██   ██ ██    ██ 
+                  //    ██    ██    ██ ██   ██ ██    ██ 
+                  //    ██     ██████  ██████   ██████  
+                  /**
+                    * ! duration değeri değiştirilecek
+                  */
+                }
+                {/* {anime?.duration} */}
               </div>
               <div className="flex items-center">
                 <Star className="mr-2 h-4 w-4 fill-yellow-400" />
-                <span className="font-medium text-yellow-400">{anime.imdbRating}</span>
+                <span className="font-medium text-yellow-400">{anime.imdb_score}</span>
                 <span className="ml-1">IMDb</span>
               </div>
             </div>
@@ -179,7 +219,7 @@ export default function AnimeDetail({ anime }: AnimeDetailProps) {
 
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Synopsis</h2>
-            <p className="text-muted-foreground leading-relaxed">{anime.description}</p>
+            <p className="text-muted-foreground leading-relaxed">{anime.summary}</p>
           </div>
         </div>
       </div>

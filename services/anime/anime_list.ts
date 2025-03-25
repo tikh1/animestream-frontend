@@ -18,6 +18,7 @@ export interface Season {
 export interface AnimeList {
   id: number;
   name: string;
+  slug: string;
   imdb_score: number;
   genres: string[];
   seasons: Season[];
@@ -38,6 +39,7 @@ export const AnimeList = async ()=> {
 
   return animelistData.data.animes.map((anime: any) => ({
     id: anime.id,
+    slug: anime.slug,
     name: anime.name,
     genre: anime.genres || [],
     year: anime.seasons?.[0]?.year || "Bilinmiyor",

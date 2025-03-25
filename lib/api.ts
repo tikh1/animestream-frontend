@@ -12,4 +12,4 @@ export const API_AVATAR = `${API_BASE}/user/avatar`;
 
 export const API_ANIMES = `${API_BASE}/anime`;
 
-export const API_ANIME = `${API_BASE}/anime/${API_BASE}`;
+export const API_ANIME = `${API_BASE}/anime`;

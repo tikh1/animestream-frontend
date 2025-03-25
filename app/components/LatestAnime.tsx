@@ -1,3 +1,5 @@
+'use client'
+
 import { AnimeCard } from "@/components/AnimeCard"
 
 const latestAnime = [
