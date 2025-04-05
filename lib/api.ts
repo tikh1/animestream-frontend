@@ -1,4 +1,4 @@
-const API_BASE = 'http://animestream.test/api';
+const API_BASE = 'https://api.turkani.me/api';
 
 export const API_LOGIN = `${API_BASE}/login`;
 
