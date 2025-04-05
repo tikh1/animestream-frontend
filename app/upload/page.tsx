@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/command"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+// Change from default export to named export
 export function UploadPage() {
   const animeList = [
     { value: 'attack-on-titan', label: 'Attack on Titan' },
@@ -337,4 +338,7 @@ export function UploadPage() {
     </>
   )
 }
+
+// Add default export that uses the named export
+export default UploadPage;
 

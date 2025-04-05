@@ -25,9 +25,11 @@ export default function ProfilePage() {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   const [userData, setUserData] = useState({
-    username: "" || params.username,
+    username: params.username || "",
     email: "",
-    bio: "" || "Anime tutkunu ve manga koleksiyoncusu.",
+    bio: "",
+    // üsttekinin doğru olması lazım ama olmazsa diye
+    //bio: "" || "Anime tutkunu ve manga koleksiyoncusu.",
     avatarUrl: "",
   })
 
@@ -49,7 +51,7 @@ export default function ProfilePage() {
           bio: data.bio || "Anime tutkunu ve manga koleksiyoncusu.",
           avatarUrl: data.avatar || "/placeholder.svg?height=200&width=200",
         });
-        console.log("profile_service:", data);
+        console.log("profile_page:", data);
       } catch (error) {
         console.error("Kullanıcı bilgileri alınamadı:", error);
       }

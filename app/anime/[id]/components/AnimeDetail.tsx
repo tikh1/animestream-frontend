@@ -30,7 +30,7 @@ interface AnimeDetailparams {
 
 export default function AnimeDetail({ params }: AnimeDetailparams) {
   const { slug } = params;
-const [anime, setAnime] = useState<AnimeData>({} as AnimeData);
+  const [anime, setAnime] = useState<AnimeData>({} as AnimeData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false)
@@ -44,7 +44,7 @@ const [anime, setAnime] = useState<AnimeData>({} as AnimeData);
     //    ██    ██    ██ ██   ██ ██    ██ 
     //    ██    ██    ██ ██   ██ ██    ██ 
     //    ██     ██████  ██████   ██████  
-    /**
+    /**TODO
      * ! duration değeri değiştirilecek
      */
     //duration: anime.duration,
@@ -86,7 +86,6 @@ const [anime, setAnime] = useState<AnimeData>({} as AnimeData);
   if (loading) return <p className="text-center">Yükleniyor...</p>;
   if (error) return <p className="text-center text-red-500">{error}</p>;
   if (!anime) return <p className="text-center text-red-500">Anime bulunamadı.</p>;
-  
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -121,7 +120,7 @@ const [anime, setAnime] = useState<AnimeData>({} as AnimeData);
                   //    ██    ██    ██ ██   ██ ██    ██ 
                   //    ██    ██    ██ ██   ██ ██    ██ 
                   //    ██     ██████  ██████   ██████  
-                  /**
+                  /**TODO
                     * ! duration değeri değiştirilecek
                   */
                 }

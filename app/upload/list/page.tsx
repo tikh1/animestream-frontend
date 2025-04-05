@@ -1,3 +1,5 @@
+'use client'
+
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import cn from 'classnames'
@@ -29,7 +31,8 @@ const uploadedAnimes = [
   },
 ]
 
-export function UploadedAnimesPage() {
+// Change from export function to export default
+export default function UploadedAnimesPage() {
   return (
     <>
       <div className="max-w-6xl mx-auto py-10">

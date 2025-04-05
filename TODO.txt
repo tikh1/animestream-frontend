@@ -1,0 +1,3 @@
+app/admin/upload/page.tsx
+app/anime/[id]/episode/[episodeID]/page.tsx
+app/upload/list/page.tsx

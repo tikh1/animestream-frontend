@@ -1,3 +1,5 @@
+'use client'
+
 import { UploadPage } from "@/app/upload/page"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"

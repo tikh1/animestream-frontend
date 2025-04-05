@@ -1,3 +1,5 @@
+'use client'
+
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import EpisodePlayer from "../components/EpisodePlayer"
@@ -19,7 +21,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
-// This would typically come from an API or database
 const episodeDatabase = {
   "attack-on-titan": {
     "1": {
