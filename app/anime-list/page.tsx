@@ -12,7 +12,8 @@ import {
 import { MultiSelect } from "@/components/ui/multi-select";
 import { AnimeCard } from "@/components/AnimeCard";
 import { Pagination } from "./components/Pagination";
-import { AnimeList } from "@/services/anime/anime_list";
+import fetchAnimeList from "@/services/anime/anime_list";
+import { toast } from "sonner";
 
 interface Anime {
   id: number;
@@ -35,17 +36,19 @@ export default function AnimeListPage() {
   const [sortBy, setSortBy] = useState("title");
   const itemsPerPage = 10;
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      const data = await AnimeList();
-      console.log("Anime List:", data);
-
+      const data = await fetchAnimeList();
       setAnimes(data);
       setFilteredAnimes(data);
     } catch (error) {
       console.error("Hata oluştu:", error);
+      setError("Anime listesi yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
+      toast.error("Anime listesi yüklenirken bir hata oluştu");
     } finally {
       setLoading(false);
     }
@@ -86,7 +89,21 @@ export default function AnimeListPage() {
   const currentItems = filteredAnimes.slice(indexOfFirstItem, indexOfLastItem);
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
-  if (loading) return <p className="text-center text-xl">Yükleniyor...</p>;
+  const handleGenreChange = (value: string[]) => {
+    setSelectedGenres(value);
+  };
+
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <p className="text-center text-xl">Yükleniyor...</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <p className="text-center text-xl text-red-500">{error}</p>
+    </div>
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -125,8 +142,8 @@ export default function AnimeListPage() {
             { value: "Supernatural", label: "Doğaüstü" },
             { value: "Thriller", label: "Gerilim" },
           ]}
-          selected={selectedGenres}
-          onChange={setSelectedGenres}
+          defaultValue={selectedGenres}
+          onValueChange={handleGenreChange}
           placeholder="Türleri seçin"
           className="md:w-1/3"
         />
@@ -137,7 +154,7 @@ export default function AnimeListPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
           {currentItems.map((anime) => (
             <AnimeCard
-                key={anime.id}
+              key={anime.id}
               anime={{
                 id: anime.id,
                 name: anime.name, 

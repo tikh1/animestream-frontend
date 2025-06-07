@@ -1,4 +1,4 @@
-import { API_ANIME } from '@/lib/api';
+import { getAnime } from '@/lib/api';
 
 export interface Episode {
     id: number;
@@ -9,42 +9,43 @@ export interface Episode {
     video_id: number;
     duration: number;
 }
-  export interface Season {
+
+export interface Season {
     id: number;
     name: string;
     episodes: Episode[];
 }
 
 export interface AnimeData {
-  id: number;
-  name: string;
-  release_date: string;
-  imdb_score: number;
-  summary: string;
-  genres: string[];
-  seasons: Season[];
-  thumbnail: string;
-  comments: string[];
+    id: number;
+    name: string;
+    release_date: string;
+    imdb_score: number;
+    summary: string;
+    genres: string[];
+    seasons: Season[];
+    thumbnail: string;
+    comments: string[];
 }
 
-export const AnimeDetails = async (slug: string): Promise<AnimeData> => {
-  
-  const response = await fetch(`${API_ANIME}/${slug}`);
+export const fetchAnimeDetail = async (slug: string): Promise<AnimeData> => {
+    try {
+        const response = await getAnime(slug);
+        const animeData = response.data;
 
-  if (!response.ok) throw new Error('Anime bilgileri alınamadı.');
-
-  const animeData = await response.json();
-  console.log("animedetail_service:", animeData);
-
-  return {
-    id: animeData.id,
-    name: animeData.name,
-    release_date: animeData.release_date,
-    imdb_score: Number(animeData.imdb_score) || 0,
-    summary: animeData.summary,
-    genres: animeData.genres || [],
-    seasons: animeData.seasons || [],
-    thumbnail: animeData.thumbnail || "",
-    comments: animeData.comments || [],
-  };
+        return {
+            id: animeData.id,
+            name: animeData.name,
+            release_date: animeData.release_date,
+            imdb_score: Number(animeData.imdb_score) || 0,
+            summary: animeData.summary,
+            genres: animeData.genres || [],
+            seasons: animeData.seasons || [],
+            thumbnail: animeData.thumbnail || "",
+            comments: animeData.comments || [],
+        };
+    } catch (error) {
+        console.error('Anime detayı alınırken hata oluştu:', error);
+        throw error;
+    }
 };

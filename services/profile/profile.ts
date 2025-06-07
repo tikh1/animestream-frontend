@@ -1,4 +1,4 @@
-import { API_PROFILE } from '@/lib/api';
+import { getProfile } from '@/lib/api';
 
 export interface UserProfile {
   name: string;
@@ -7,21 +7,21 @@ export interface UserProfile {
   bio?: string;
 }
 
-export const UserProfile = async (username: string): Promise<UserProfile> => {
-  
-  const response = await fetch(`${API_PROFILE}/${username}`);
+const fetchProfile = async (username: string): Promise<UserProfile> => {
+  try {
+    const response = await getProfile(username);
+    const profileData = response.data.data.user;
 
-  if (!response.ok) throw new Error('Kullanıcı bilgileri alınamadı.');
-
-  const userData = await response.json();
-  console.log("profile_service:", userData);
-
-  const { name, email, bio, avatar } = userData.data.user;
-
-  return {
-    name,
-    email,
-    bio: bio || '',
-    avatar,
-  };
+    return{
+      name: profileData.name,
+      email: profileData.email,
+      avatar: profileData.avatar,
+      bio: profileData.bio,
+    };
+  } catch (error) {
+    console.error('Kullanıcı profili alınırken hata oluştu:', error);
+    throw error;
+  }
 };
+
+export default fetchProfile;

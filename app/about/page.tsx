@@ -68,7 +68,7 @@ const blackGlowVariants = {
 const SocialIcon = ({ href, icon: Icon, color = "text-black" }) => (
   <motion.div variants={iconVariants}>
     <Link
-      href={href}
+      href={"href"}
       target="_blank"
       rel="noopener noreferrer"
       className="transform hover:scale-110 transition-transform duration-200"

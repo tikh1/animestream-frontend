@@ -30,7 +30,7 @@ export default function SecondaryNav() {
     { label: "Anime Listesi", href: "/anime-list" },
     { label: "Trending", href: "/trending" },
     { label: "İzleme Geçmişi", href: "/watch-history" },
-    { label: "Blog", href: "/blog" },
+    { label: "Bloglar", href: "/blog-list" },
     { label: "Hakkımızda", href: "/about" },
   ]
 

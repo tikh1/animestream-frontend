@@ -1,4 +1,4 @@
-import { API_LOGIN, API_REGISTER, API_ME } from '@/lib/api';
+import { login as loginApi, register as registerApi, getMe } from '@/lib/api';
 
 export interface User {
   email: string;
@@ -10,15 +10,8 @@ export interface User {
 
 export const login = async (email: string, password: string) => {
   try {
-    const response = await fetch(API_LOGIN, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!response.ok) throw new Error('Geçersiz e-posta veya şifre');
-
-    const data = await response.json();
+    const response = await loginApi({ email, password });
+    const data = response.data;
     const token = data.data.token;
     const roles = data.data.roles?.map((role: any) => role.name) || [];
 
@@ -33,17 +26,10 @@ export const login = async (email: string, password: string) => {
   }
 };
 
-export const register = async (email: string, name: string, password: string, password_confirmation: string) => {
+export const register = async (email: string, name: string, password: string, confirmPassword: string) => {
   try {
-    const response = await fetch(API_REGISTER, {
-      method: 'POST',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, name, password, password_confirmation }),
-    });
-
-    if (!response.ok) throw new Error('Kayıt işlemi başarısız!');
-
-    const data = await response.json();
+    const response = await registerApi({ email, name, password });
+    const data = response.data;
     const token = data.data.token;
     const roles = data.data.roles?.map((role: any) => role.name) || [];
 
@@ -59,13 +45,8 @@ export const register = async (email: string, name: string, password: string, pa
 };
 
 export const me = async (token: string): Promise<User> => {
-  const response = await fetch(API_ME, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  if (!response.ok) throw new Error('Yetkisiz erişim');
-
-  const userData = await response.json();
+  const response = await getMe();
+  const userData = response.data;
 
   const { name, email, bio, avatar, roles } = userData.data;
 

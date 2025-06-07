@@ -7,9 +7,8 @@ import { CalendarDays, ArrowRight } from 'lucide-react'
 interface BlogPost {
   id: number
   title: string
-  excerpt: string
-  image: string
-  date: string
+  thumbnail: string
+  publishDate: string
   category: string
   author: string
 }
@@ -24,7 +23,7 @@ export function BlogCard({ post }: BlogCardProps) {
       <Link href={`/blog/${post.id}`}>
         <div className="relative aspect-[16/9] overflow-hidden">
           <img
-            src={post.image}
+            src={post.thumbnail}
             alt={post.title}
             className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
           />
@@ -35,7 +34,7 @@ export function BlogCard({ post }: BlogCardProps) {
         <CardContent className="p-6">
           <div className="flex items-center text-sm text-muted-foreground mb-3">
             <CalendarDays className="mr-2 h-4 w-4" />
-            {new Date(post.date).toLocaleDateString('tr-TR', {
+            {new Date(post.publishDate).toLocaleDateString('tr-TR', {
               year: 'numeric',
               month: 'long',
               day: 'numeric'
@@ -44,9 +43,6 @@ export function BlogCard({ post }: BlogCardProps) {
           <h3 className="text-xl font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
             {post.title}
           </h3>
-          <p className="text-muted-foreground line-clamp-3">
-            {post.excerpt}
-          </p>
         </CardContent>
         <CardFooter className="px-6 pb-6 pt-0 flex justify-between items-center">
           <span className="text-sm text-muted-foreground">{post.author}</span>

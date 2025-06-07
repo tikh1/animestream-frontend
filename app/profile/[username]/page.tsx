@@ -16,8 +16,8 @@ import { UserSettings } from "@/components/profile/UserSettings"
 import { Camera } from "lucide-react"
 import { UserComments } from "@/components/profile/UserComments"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import uploadAvatar from "@/services/profile/upload_avatar"
-import { UserProfile } from "@/services/profile/profile"
+import updateAvatar from "@/services/profile/update_avatar"
+import fetchProfile from "@/services/profile/profile"
 
 
 export default function ProfilePage() {
@@ -25,7 +25,7 @@ export default function ProfilePage() {
   const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   const [userData, setUserData] = useState({
-    username: params.username || "",
+    username: Array.isArray(params.username) ? params.username[0] : params.username || "",
     email: "",
     bio: "",
     // üsttekinin doğru olması lazım ama olmazsa diye
@@ -43,8 +43,9 @@ export default function ProfilePage() {
     setIsOwnProfile(params.username === storedUser);
 
     const fetchUserData = async () => {
+      const username = Array.isArray(params.username) ? params.username[0] : params.username;
       try {
-        const data = await UserProfile(Array.isArray(params.username) ? params.username[0] : params.username);
+        const data = await fetchProfile(username);
         setUserData({
           username: data.name,
           email: data.email,
@@ -52,8 +53,14 @@ export default function ProfilePage() {
           avatarUrl: data.avatar || "/placeholder.svg?height=200&width=200",
         });
         console.log("profile_page:", data);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Kullanıcı bilgileri alınamadı:", error);
+        setUserData({
+          username: "",
+          email: "",
+          bio: "Kullanıcı bilgileri yüklenemedi.",
+          avatarUrl: "/placeholder.svg?height=200&width=200",
+        });
       }
     };
 
@@ -80,12 +87,12 @@ export default function ProfilePage() {
   const handleSaveChanges = async () => {
     if (newAvatar) {
       try {
-        const response = await uploadAvatar(newAvatar)
+        const response = await updateAvatar(newAvatar)
         const updatedAvatarUrl = response.avatarUrl
         setUserData((prev) => ({ ...prev, avatarUrl: updatedAvatarUrl }))
         setIsAvatarDialogOpen(false)
-      } catch (error) {
-        alert("Resim yükleme başarısız: " + error.message)
+      } catch (error: unknown) {
+        alert("Resim yükleme başarısız: " + (error as Error).message)
       }
     } else {
       setIsAvatarDialogOpen(false)

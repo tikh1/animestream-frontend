@@ -1,4 +1,4 @@
-import { API_ANIMES } from '@/lib/api';
+import { getAnimes } from '@/lib/api';
 
 export interface Episode {
   id: number;
@@ -9,6 +9,7 @@ export interface Episode {
   video_id: number;
   duration: number;
 }
+
 export interface Season {
   id: number;
   name: string;
@@ -25,27 +26,26 @@ export interface AnimeList {
   thumbnail: string;
 }
 
-export const AnimeList = async ()=> {
-  
-  const response = await fetch(`${API_ANIMES}`);
-
-  if (!response.ok) throw new Error('Anime bilgileri alınamadı.');
-
-  const animelistData = await response.json();
-  
-  //console.log("anime_list_service:", animelistData.data.animes);
-  
-  //const episodes = seasons?.[0]?.episodes ?? [];
-
-  return animelistData.data.animes.map((anime: any) => ({
-    id: anime.id,
-    slug: anime.slug,
-    name: anime.name,
-    genre: anime.genres || [],
-    year: anime.seasons?.[0]?.year || "Bilinmiyor",
-    rating: Number(anime.imdb_score) || 0,
-    seasons: anime.seasons?.length || 1,
-    episodesPerSeason: anime.seasons?.[0]?.episodes?.length || 1,
-    thumbnail: anime.thumbnail || "",
-  }));
+const fetchAnimeList = async () => {
+  try {
+    const response = await getAnimes();
+    const animelistData = response.data.data.animes;
+    
+    return animelistData.map((anime: any) => ({
+      id: anime.id,
+      slug: anime.slug,
+      name: anime.name,
+      genre: anime.genres || [],
+      year: anime.seasons?.[0]?.year || "Bilinmiyor",
+      rating: Number(anime.imdb_score) || 0,
+      seasons: anime.seasons?.length || 1,
+      episodesPerSeason: anime.seasons?.[0]?.episodes?.length || 1,
+      thumbnail: anime.thumbnail || "",
+    }));
+  } catch (error) {
+    console.error('Anime listesi alınırken hata oluştu:', error);
+    throw error;
+  }
 };
+
+export default fetchAnimeList;

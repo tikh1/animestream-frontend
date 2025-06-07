@@ -1,15 +1,61 @@
-const API_BASE = 'https://api.turkani.me/api';
+import api from './axios';
+import { AxiosRequestConfig } from 'axios';
 
-export const API_LOGIN = `${API_BASE}/login`;
+interface CustomAxiosRequestConfig extends AxiosRequestConfig {
+  requireAuth?: boolean;
+}
 
-export const API_REGISTER = `${API_BASE}/register`;
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
-export const API_ME = `${API_BASE}/user`;
+// Auth endpoints
+export const login = (credentials: { email: string; password: string }) => 
+  api.post(`${API_BASE}/login`, credentials);
 
-export const API_PROFILE = `${API_BASE}/profile`;
+export const register = (userData: { name: string; email: string; password: string }) => 
+  api.post(`${API_BASE}/register`, userData);
 
-export const API_AVATAR = `${API_BASE}/user/avatar`;
+// User endpoints
+export const getMe = () => 
+  api.get(`${API_BASE}/profile`, {
+    requireAuth: true
+  } as CustomAxiosRequestConfig);
 
-export const API_ANIMES = `${API_BASE}/anime`;
+// export const getProfile = (username: string) => 
+//   api.get(`${API_BASE}/profile/${username}`)
 
-export const API_ANIME = `${API_BASE}/anime`;
+export const getProfile = (username: string) => 
+  api.get(`${API_BASE}/profile/${username}`, {
+    requireAuth: true
+  } as CustomAxiosRequestConfig);
+
+
+export const updateProfile = (data: any) => 
+  api.put(`${API_BASE}/profile`, data, {
+    requireAuth: true
+  } as CustomAxiosRequestConfig);
+
+export const updateAvatar = (formData: FormData) => 
+  api.post(`${API_BASE}/user/avatar`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+    requireAuth: true
+  } as CustomAxiosRequestConfig);
+
+// Anime endpoints
+export const getAnimes = (params?: any) => 
+  api.get(`${API_BASE}/anime`, { params });
+
+export const getAnime = (slug: string) => 
+  api.get(`${API_BASE}/anime/${slug}`);
+
+// Blog endpoints
+export const getBlogs = (params?: any) => 
+  api.get(`${API_BASE}/blog`, { params });
+
+export const getBlog = (id: number) => 
+  api.get(`${API_BASE}/blog/${id}`);
+
+// Test endpoint
+export const testApi = () => 
+  api.get(`${API_BASE}/test`);
