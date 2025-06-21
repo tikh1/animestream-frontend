@@ -61,6 +61,7 @@ export default function Navbar() {
           AnimeStream
         </Link>
         <div className="flex items-center space-x-2">
+          {/* Search bar commented out
           <div className="hidden md:block relative">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 transform text-muted-foreground" />
             <Input
@@ -105,6 +106,7 @@ export default function Navbar() {
               )}
             </AnimatePresence>
           </div>
+          */}
 
           <ThemeToggle />
           <Link href="/help">
@@ -115,6 +117,7 @@ export default function Navbar() {
 
           {isLoggedIn ? (
             <div className="flex items-center space-x-2">
+              {/* Notification button commented out
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="border relative">
@@ -167,6 +170,7 @@ export default function Navbar() {
                   </ScrollArea>
                 </PopoverContent>
               </Popover>
+              */}
 
               <Link href={`/profile/${currentUser.username}`}>
                 <Button variant="ghost" size="sm" className="border flex items-center gap-2">

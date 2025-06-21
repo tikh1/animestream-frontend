@@ -2,8 +2,9 @@
 
 import { useEffect } from "react"
 import { motion } from "framer-motion"
-import { Github, Twitter, Instagram } from "lucide-react"
+import { Github, Twitter, Instagram, Youtube } from "lucide-react"
 import Link from "next/link"
+import { LucideIcon } from "lucide-react"
 
 const textVariants = {
   hidden: { opacity: 0, filter: "blur(10px)" },
@@ -48,7 +49,7 @@ const glowVariants = {
     transition: {
       duration: 2,
       repeat: Number.POSITIVE_INFINITY,
-      repeatType: "reverse",
+      repeatType: "reverse" as const,
     },
   },
 }
@@ -60,15 +61,21 @@ const blackGlowVariants = {
     transition: {
       duration: 2,
       repeat: Number.POSITIVE_INFINITY,
-      repeatType: "reverse",
+      repeatType: "reverse" as const,
     },
   },
 }
 
-const SocialIcon = ({ href, icon: Icon, color = "text-black" }) => (
+interface SocialIconProps {
+  href: string
+  icon: LucideIcon
+  color?: string
+}
+
+const SocialIcon = ({ href, icon: Icon, color = "text-black" }: SocialIconProps) => (
   <motion.div variants={iconVariants}>
     <Link
-      href={"href"}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       className="transform hover:scale-110 transition-transform duration-200"
@@ -118,8 +125,8 @@ export default function AboutPage() {
                 Backend Developer & System Architect
               </motion.p>
               <motion.div variants={containerVariants} className="flex justify-center md:justify-start space-x-6">
-                <SocialIcon href="https://github.com/atakwn75" icon={Github} color="text-white" />
-                <SocialIcon href="https://twitter.com/atakwn75" icon={Twitter} color="text-white" />
+                <SocialIcon href="https://github.com/Atakan75" icon={Github} color="text-white" />
+                <SocialIcon href="https://www.youtube.com/@Atakwn75" icon={Youtube} color="text-white" />
                 <SocialIcon href="https://instagram.com/atakwn75" icon={Instagram} color="text-white" />
               </motion.div>
             </motion.div>
@@ -147,8 +154,8 @@ export default function AboutPage() {
               </motion.p>
               <motion.div variants={containerVariants} className="flex justify-center md:justify-end space-x-6">
                 <SocialIcon href="https://github.com/tikh1" icon={Github} color="text-black" />
-                <SocialIcon href="https://twitter.com/tikhi" icon={Twitter} color="text-black" />
-                <SocialIcon href="https://instagram.com/tikhi" icon={Instagram} color="text-black" />
+                <SocialIcon href="https://www.youtube.com/@-tikhi" icon={Youtube} color="text-black" />
+                <SocialIcon href="https://instagram.com/tikh1337" icon={Instagram} color="text-black" />
               </motion.div>
             </motion.div>
           </motion.div>
