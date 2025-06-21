@@ -1,14 +1,18 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { formatDistanceToNow } from "date-fns"
-import { ThumbsUp, ThumbsDown, AlertTriangle, Send, ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react"
+import { ThumbsUp, ThumbsDown, AlertTriangle, ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { motion, AnimatePresence } from "framer-motion"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { fetchEpisode } from "@/services/anime/episode"
+import createComment, { createEpisodeComment, updateCommentService, deleteCommentService } from "@/services/anime/comment"
+import CommentForm from '@/components/CommentForm'
+
 
 interface EpisodeCommentsProps {
   episodeId: string
@@ -31,53 +35,13 @@ interface Comment {
 }
 
 export default function EpisodeComments({ episodeId, animeId }: EpisodeCommentsProps) {
-  const [newComment, setNewComment] = useState("")
   const [sortBy, setSortBy] = useState("newest")
-  const [isSpoiler, setIsSpoiler] = useState(false)
   const [revealedSpoilers, setRevealedSpoilers] = useState<string[]>([])
   const [expandedComments, setExpandedComments] = useState<string[]>([])
   const [currentUser] = useState({ id: "user123" }) // Simulating current user
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: "1",
-      userId: "user123",
-      user: {
-        name: "John Doe",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content: "This episode was amazing! The fight scene at the end was so intense.",
-      createdAt: new Date("2024-01-03T12:00:00"),
-      likes: 15,
-      dislikes: 2,
-      replies: [
-        {
-          id: "1-1",
-          userId: "user456",
-          user: {
-            name: "Alice Smith",
-            avatar: "/placeholder.svg?height=40&width=40",
-          },
-          content: "I agree! The animation quality was top-notch too.",
-          createdAt: new Date("2024-01-03T14:30:00"),
-          likes: 5,
-          dislikes: 0,
-        },
-      ],
-    },
-    {
-      id: "2",
-      userId: "user789",
-      user: {
-        name: "Jane Smith",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content: "I can't believe what happened to the main character at the end!",
-      createdAt: new Date("2024-01-02T15:30:00"),
-      likes: 10,
-      dislikes: 1,
-      isSpoiler: true,
-    },
-  ])
+  const [comments, setComments] = useState<Comment[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingComment, setEditingComment] = useState<Comment | null>(null)
@@ -85,25 +49,79 @@ export default function EpisodeComments({ episodeId, animeId }: EpisodeCommentsP
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newComment.trim()) return
-    const newCommentObj: Comment = {
-      id: String(comments.length + 1),
-      userId: currentUser.id,
-      user: {
-        name: "Current User",
-        avatar: "/placeholder.svg?height=40&width=40",
-      },
-      content: newComment,
-      createdAt: new Date(),
-      likes: 0,
-      dislikes: 0,
-      isSpoiler: isSpoiler,
+  // Fetch comments from the episode service
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        const episode = await fetchEpisode(animeId, episodeId)
+        
+        if (episode && episode.comments) {
+          // Convert API comments to the component's Comment interface
+          const convertedComments: Comment[] = episode.comments.map((apiComment: any) => ({
+            id: String(apiComment.id),
+            userId: String(apiComment.user?.id || apiComment.id),
+            user: {
+              name: apiComment.user?.name || `User ${apiComment.id}`,
+              avatar: apiComment.user?.avatar || "/placeholder.svg?height=40&width=40",
+            },
+            content: apiComment.comment || apiComment.content || '',
+            createdAt: apiComment.created_at ? new Date(apiComment.created_at) : new Date(),
+            likes: 0, // API doesn't provide likes yet
+            dislikes: 0, // API doesn't provide dislikes yet
+            replies: [], // API doesn't provide replies yet
+            isSpoiler: false, // API doesn't provide spoiler flag yet
+          }))
+          
+          setComments(convertedComments)
+        } else {
+          setComments([])
+        }
+      } catch (err) {
+        console.error('Error loading comments:', err)
+        setError('Failed to load comments')
+        setComments([])
+      } finally {
+        setLoading(false)
+      }
     }
-    setComments([newCommentObj, ...comments])
-    setNewComment("")
-    setIsSpoiler(false)
+
+    if (animeId && episodeId) {
+      loadComments()
+    }
+  }, [animeId, episodeId])
+
+  const handleSubmit = async (comment: string, isSpoiler: boolean) => {
+    console.log('handleSubmit called!', { comment, episodeId })
+    if (!comment.trim()) return
+    
+    try {
+      console.log('Calling createEpisodeComment service...')
+      const response = await createEpisodeComment(comment, parseInt(episodeId), null)
+      console.log('createEpisodeComment response:', response)
+      
+      // Add the new comment to the list
+      const newCommentObj: Comment = {
+        id: String(response.id || comments.length + 1),
+        userId: currentUser.id,
+        user: {
+          name: "Current User",
+          avatar: "/placeholder.svg?height=40&width=40",
+        },
+        content: comment,
+        createdAt: new Date(),
+        likes: 0,
+        dislikes: 0,
+        isSpoiler: isSpoiler,
+      }
+      
+      setComments([newCommentObj, ...comments])
+    } catch (error) {
+      console.error('Error posting comment:', error)
+      setError('Failed to post comment')
+    }
   }
 
   const toggleSpoiler = (commentId: string) => {
@@ -124,10 +142,16 @@ export default function EpisodeComments({ episodeId, animeId }: EpisodeCommentsP
     setIsEditDialogOpen(true)
   }
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (editingComment) {
-      setComments(comments.map((c) => (c.id === editingComment.id ? { ...c, content: editedContent } : c)))
-      setIsEditDialogOpen(false)
+      try {
+        await updateCommentService(parseInt(editingComment.id), editedContent)
+        setComments(comments.map((c) => (c.id === editingComment.id ? { ...c, content: editedContent } : c)))
+        setIsEditDialogOpen(false)
+      } catch (error) {
+        console.error('Error updating comment:', error)
+        setError('Failed to update comment')
+      }
     }
   }
 
@@ -136,10 +160,16 @@ export default function EpisodeComments({ episodeId, animeId }: EpisodeCommentsP
     setIsDeleteDialogOpen(true)
   }
 
-  const handleDeleteComment = () => {
+  const handleDeleteComment = async () => {
     if (commentToDelete) {
-      setComments(comments.filter((c) => c.id !== commentToDelete.id))
-      setIsDeleteDialogOpen(false)
+      try {
+        await deleteCommentService(parseInt(commentToDelete.id))
+        setComments(comments.filter((c) => c.id !== commentToDelete.id))
+        setIsDeleteDialogOpen(false)
+      } catch (error) {
+        console.error('Error deleting comment:', error)
+        setError('Failed to delete comment')
+      }
     }
   }
 
@@ -311,43 +341,42 @@ export default function EpisodeComments({ episodeId, animeId }: EpisodeCommentsP
         </div>
 
         {/* Comment Form */}
-        <div className="bg-card p-4 rounded-lg shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Textarea
-              placeholder="Share your thoughts..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              className="min-h-[100px] resize-none"
-            />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="spoilerToggle"
-                  checked={isSpoiler}
-                  onChange={(e) => setIsSpoiler(e.target.checked)}
-                  className="rounded border-gray-300 text-primary focus:ring-primary"
-                />
-                <label htmlFor="spoilerToggle" className="text-sm text-muted-foreground">
-                  Mark as spoiler
-                </label>
-              </div>
-              <Button type="submit" disabled={!newComment.trim()}>
-                <Send className="w-4 h-4 mr-2" />
-                Post Comment
-              </Button>
-            </div>
-          </form>
-        </div>
+        <CommentForm
+          onSubmit={handleSubmit}
+          loading={loading}
+        />
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-muted-foreground">Loading comments...</div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+            <p className="text-destructive text-sm">{error}</p>
+          </div>
+        )}
 
         {/* Comments List */}
-        <div>
-          <AnimatePresence>
-            {sortedComments.map((comment) => (
-              <CommentComponent key={comment.id} comment={comment} />
-            ))}
-          </AnimatePresence>
-        </div>
+        {!loading && !error && (
+          <div>
+            {comments.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No comments yet. Be the first to share your thoughts!
+              </div>
+            ) : (
+              <AnimatePresence>
+                {sortedComments.map((comment) => (
+                  <CommentComponent key={comment.id} comment={comment} />
+                ))}
+              </AnimatePresence>
+            )}
+          </div>
+        )}
+
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
           <DialogContent>
             <DialogHeader>

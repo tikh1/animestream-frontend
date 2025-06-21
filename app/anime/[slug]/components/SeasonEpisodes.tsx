@@ -9,12 +9,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
+import { Season } from "@/services/anime/anime_detail"
 
 interface SeasonEpisodesProps {
   animeId: string
+  seasons: Season[]
 }
 
-export default function SeasonEpisodes({ animeId }: SeasonEpisodesProps) {
+export default function SeasonEpisodes({ animeId, seasons: apiSeasons }: SeasonEpisodesProps) {
   const [activeSeason, setActiveSeason] = useState("1")
   const [isAddSeasonDialogOpen, setIsAddSeasonDialogOpen] = useState(false)
   const [newSeasonData, setNewSeasonData] = useState({
@@ -23,6 +25,8 @@ export default function SeasonEpisodes({ animeId }: SeasonEpisodesProps) {
     year: "",
     image: null as File | null,
   })
+
+  console.log('API Seasons:', apiSeasons)
 
   const handleAddSeason = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -35,66 +39,22 @@ export default function SeasonEpisodes({ animeId }: SeasonEpisodesProps) {
     setNewSeasonData({ title: "", episodeCount: "", year: "", image: null })
   }
 
-  const seasons = [
-    {
-      id: "1",
-      title: "Season 1",
-      episodeCount: 25,
-      year: "2013",
-      episodes: [
-        {
-          number: 1,
-          title: "To You, 2,000 Years Later",
-          thumbnail: "/placeholder.svg?height=180&width=320&text=EP01",
-          duration: "24:45",
-          progress: 100,
-        },
-        {
-          number: 2,
-          title: "That Day",
-          thumbnail: "/placeholder.svg?height=180&width=320&text=EP02",
-          duration: "24:45",
-          progress: 65,
-        },
-        {
-          number: 3,
-          title: "A Dim Light Amid Despair",
-          thumbnail: "/placeholder.svg?height=180&width=320&text=EP03",
-          duration: "24:45",
-          progress: 0,
-        },
-        {
-          number: 4,
-          title: "The Night of the Closing Ceremony",
-          thumbnail: "/placeholder.svg?height=180&width=320&text=EP04",
-          duration: "24:45",
-          progress: 0,
-        },
-      ],
-    },
-    {
-      id: "2",
-      title: "Season 2",
-      episodeCount: 12,
-      year: "2017",
-      episodes: [
-        {
-          number: 1,
-          title: "Beast Titan",
-          thumbnail: "/placeholder.svg?height=180&width=320&text=EP01",
-          duration: "24:45",
-          progress: 0,
-        },
-        {
-          number: 2,
-          title: "I'm Home",
-          thumbnail: "/placeholder.svg?height=180&width=320&text=EP02",
-          duration: "24:45",
-          progress: 0,
-        },
-      ],
-    },
-  ]
+  // API'den gelen sezonları kullan, yoksa boş array
+  const seasons = apiSeasons && apiSeasons.length > 0 ? apiSeasons.map((season, seasonIndex) => ({
+    id: String(season.id),
+    season_id: seasonIndex + 1,
+    title: season.name,
+    episodeCount: season.episodes.length,
+    year: new Date().getFullYear().toString(), // API'den gelmiyorsa şu anki yıl
+    episodes: season.episodes.map((episode, episodeIndex) => ({
+      id: episodeIndex + 1,
+      episode_slug: episode.slug,
+      title: episode.name,
+      thumbnail: "/placeholder.svg?height=180&width=320&text=EP" + episode.id.toString().padStart(2, "0"),
+      duration: episode.duration,
+      progress: 0,
+    }))
+  })) : []
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -149,15 +109,15 @@ export default function SeasonEpisodes({ animeId }: SeasonEpisodesProps) {
             .find((s) => s.id === activeSeason)
             ?.episodes.map((episode) => (
               <Link
-                key={episode.number}
-                href={`/anime/${animeId}/episode/${episode.number}`}
+                key={episode.episode_slug}
+                href={`/anime/${animeId}/episode/${episode.episode_slug}`}
                 className="group relative bg-card rounded-lg overflow-hidden hover:shadow-lg transition-all duration-200"
               >
                 {/* Thumbnail Container */}
                 <div className="relative aspect-video">
                   <img
                     src={episode.thumbnail || "/placeholder.svg"}
-                    alt={`Episode ${episode.number}`}
+                    alt={`Episode ${episode.episode_slug}`}
                     className="w-full h-full object-cover"
                   />
 
@@ -184,7 +144,7 @@ export default function SeasonEpisodes({ animeId }: SeasonEpisodesProps) {
 
                   {/* Episode Number Badge */}
                   <div className="absolute top-2 left-2 px-2 py-1 bg-black/60 rounded-none text-xs font-medium text-white">
-                    EP {episode.number.toString().padStart(2, "0")}
+                    EP {seasons.find((s) => s.id === activeSeason)?.season_id} : {episode.id}
                   </div>
 
                   {/* Watched Badge */}

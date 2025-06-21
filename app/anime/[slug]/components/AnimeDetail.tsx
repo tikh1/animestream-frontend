@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { MultiSelect } from "@/components/ui/multi-select"
 import { DatePicker } from "@/components/ui/date-picker"
 import { format } from "date-fns"
-import { AnimeDetails, AnimeData } from "@/services/anime/anime_detail";
+import { fetchAnimeDetail, AnimeData, Genre } from "@/services/anime/anime_detail";
 
 const isAdminOrMod = () => true // Replace with actual authentication logic
 
@@ -28,36 +28,47 @@ interface AnimeDetailparams {
   };
 }
 
+interface FormData {
+  title: string;
+  image: string;
+  releaseDate: Date;
+  duration: string;
+  genres: Genre[];
+  description: string;
+  imdbRating: number;
+}
+
 export default function AnimeDetail({ params }: AnimeDetailparams) {
   const { slug } = params;
   const [anime, setAnime] = useState<AnimeData>({} as AnimeData);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false)
-    const [formData, setFormData] = useState({
-    title: anime.name,
-    image: anime.thumbnail,
-    releaseDate: new Date(anime.release_date),
-
-    // ████████  ██████  ██████   ██████  
-    //    ██    ██    ██ ██   ██ ██    ██ 
-    //    ██    ██    ██ ██   ██ ██    ██ 
-    //    ██    ██    ██ ██   ██ ██    ██ 
-    //    ██     ██████  ██████   ██████  
-    /**TODO
-     * ! duration değeri değiştirilecek
-     */
-    //duration: anime.duration,
-    genres: anime.genres,
-    description: anime.summary,
-    imdbRating: anime.imdb_score,
+  const [formData, setFormData] = useState<FormData>({
+    title: "",
+    image: "",
+    releaseDate: new Date(),
+    duration: "",
+    genres: [],
+    description: "",
+    imdbRating: 0,
   })
 
   useEffect(() => {
     const fetchAnime = async () => {
       try {
-        const data = await AnimeDetails(slug);
+        const data = await fetchAnimeDetail(slug);
         setAnime(data);
+        // Update formData with anime data when it's loaded
+        setFormData({
+          title: data.name || "",
+          image: data.thumbnail || "",
+          releaseDate: new Date(data.release_date || new Date()),
+          duration: "", // TODO: Add duration field to anime data
+          genres: data.genres || [],
+          description: data.summary || "",
+          imdbRating: data.imdb_score || 0,
+        });
       } catch (err) {
         setError("Anime bilgileri alınamadı.");
       } finally {
@@ -76,7 +87,7 @@ export default function AnimeDetail({ params }: AnimeDetailparams) {
     // Add more genres as needed
   ]
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     // API call to update anime details
     console.log("Updated Anime Data:", formData)
@@ -160,10 +171,7 @@ export default function AnimeDetail({ params }: AnimeDetailparams) {
                   </div>
                   <div className="space-y-2">
                     <Label>Yayın Tarihi</Label>
-                    <DatePicker
-                      value={formData.releaseDate}
-                      onChange={(date) => setFormData({ ...formData, releaseDate: date })}
-                    />
+                    <DatePicker />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="duration">Süre</Label>
@@ -186,8 +194,14 @@ export default function AnimeDetail({ params }: AnimeDetailparams) {
                     <Label htmlFor="genres">Türler</Label>
                     <MultiSelect
                       options={genreOptions}
-                      selected={formData.genres}
-                      onChange={(genres) => setFormData({ ...formData, genres })}
+                      defaultValue={formData.genres.map(genre => genre.name)}
+                      onValueChange={(selectedGenres) => {
+                        const genreObjects = selectedGenres.map(name => ({
+                          name,
+                          pivot: { anime_id: 0, genre_id: 0 }
+                        }));
+                        setFormData({ ...formData, genres: genreObjects });
+                      }}
                       placeholder="Türleri seçin"
                     />
                   </div>
@@ -209,9 +223,9 @@ export default function AnimeDetail({ params }: AnimeDetailparams) {
           </Dialog>
 
           <div className="flex flex-wrap gap-2">
-            {anime.genres.map((genre) => (
-              <Badge key={genre} variant="secondary">
-                {genre}
+            {anime.genres.map((genre: Genre) => (
+              <Badge key={genre.name} variant="secondary">
+                {genre.name}
               </Badge>
             ))}
           </div>

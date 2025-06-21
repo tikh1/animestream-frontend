@@ -20,13 +20,13 @@ export const getMe = () =>
     requireAuth: true
   } as CustomAxiosRequestConfig);
 
-// export const getProfile = (username: string) => 
-//   api.get(`${API_BASE}/profile/${username}`)
-
 export const getProfile = (username: string) => 
-  api.get(`${API_BASE}/profile/${username}`, {
-    requireAuth: true
-  } as CustomAxiosRequestConfig);
+  api.get(`${API_BASE}/profile/${username}`)
+
+// export const getProfile = (username: string) => 
+//   api.get(`${API_BASE}/profile/${username}`, {
+//     requireAuth: true
+//   } as CustomAxiosRequestConfig);
 
 
 export const updateProfile = (data: any) => 
@@ -49,12 +49,45 @@ export const getAnimes = (params?: any) =>
 export const getAnime = (slug: string) => 
   api.get(`${API_BASE}/anime/${slug}`);
 
+export const getAnimeEpisodes = (slug: string, episodeSlug: string) => 
+  api.get(`${API_BASE}/anime/${slug}/episode/${episodeSlug}`);
+
 // Blog endpoints
 export const getBlogs = (params?: any) => 
   api.get(`${API_BASE}/blog`, { params });
 
 export const getBlog = (id: number) => 
   api.get(`${API_BASE}/blog/${id}`);
+
+export const postComment = (commentData: { 
+  comment: string; 
+  anime_id: number; 
+  parent_id?: number | null 
+}) => 
+  api.post(`${API_BASE}/anime/comment`, commentData, {
+    requireAuth: true
+  } as CustomAxiosRequestConfig);
+
+export const postEpisodeComment = (commentData: { 
+  comment: string; 
+  episode_id: number; 
+  parent_id?: number | null 
+}) => 
+  api.post(`${API_BASE}/episode/comment`, commentData, {
+    requireAuth: true
+  } as CustomAxiosRequestConfig);
+
+export const updateComment = (commentId: number, commentData: { 
+  comment: string 
+}) => 
+  api.put(`${API_BASE}/anime/comment/${commentId}`, commentData, {
+    requireAuth: true
+  } as CustomAxiosRequestConfig);
+
+export const deleteComment = (commentId: number) => 
+  api.delete(`${API_BASE}/anime/comment/${commentId}`, {
+    requireAuth: true
+  } as CustomAxiosRequestConfig);
 
 // Test endpoint
 export const testApi = () => 

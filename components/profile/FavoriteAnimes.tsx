@@ -37,7 +37,7 @@ const favoriteAnimes = [
   },
 ]
 
-export function FavoriteAnimes() {
+export default function FavoriteAnimes() {
   return (
     <TooltipProvider>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>

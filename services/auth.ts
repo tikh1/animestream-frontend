@@ -17,6 +17,7 @@ export const login = async (email: string, password: string) => {
 
     localStorage.setItem('token', token);
     localStorage.setItem('roles', JSON.stringify(roles));
+    localStorage.setItem('user', data.data.user.name);
 
     await fetchAndStoreUser(token);
     return data;
@@ -35,6 +36,7 @@ export const register = async (email: string, name: string, password: string, co
 
     localStorage.setItem('token', token);
     localStorage.setItem('roles', JSON.stringify(roles));
+    localStorage.setItem('user', data.data.user.name);
 
     await fetchAndStoreUser(token);
     return data;

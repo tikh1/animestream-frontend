@@ -12,6 +12,8 @@ const fetchProfile = async (username: string): Promise<UserProfile> => {
     const response = await getProfile(username);
     const profileData = response.data.data.user;
 
+    console.log(profileData);
+
     return{
       name: profileData.name,
       email: profileData.email,

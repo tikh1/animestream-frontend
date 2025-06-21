@@ -1,11 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { formatDistanceToNow } from 'date-fns'
-import { ThumbsUp, ThumbsDown, MessageSquare, AlertTriangle, Send, ChevronDown, ChevronUp } from 'lucide-react'
+import { ThumbsUp, ThumbsDown, MessageSquare, AlertTriangle, ChevronDown, ChevronUp, Pencil, Trash2 } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -14,13 +14,19 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { motion, AnimatePresence } from 'framer-motion'
+import { fetchAnimeDetail } from '@/services/anime/anime_detail'
+import createComment, { updateCommentService, deleteCommentService } from '@/services/anime/comment'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import CommentForm from '@/components/CommentForm'
 
 interface CommentsProps {
   animeId: string
+  comments?: any[] // API'den gelen yorum objeleri
 }
 
 interface Comment {
   id: string
+  userId?: string
   user: {
     name: string
     avatar?: string
@@ -33,70 +39,110 @@ interface Comment {
   isSpoiler?: boolean
 }
 
-export default function Comments({ animeId }: CommentsProps) {
-  const [newComment, setNewComment] = useState('')
+export default function Comments({ animeId, comments: initialComments }: CommentsProps) {
   const [sortBy, setSortBy] = useState('newest')
-  const [isSpoiler, setIsSpoiler] = useState(false)
   const [revealedSpoilers, setRevealedSpoilers] = useState<string[]>([])
   const [expandedComments, setExpandedComments] = useState<string[]>([])
+  const [comments, setComments] = useState<Comment[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [currentUser] = useState({ id: "user123" }) // Simulating current user
 
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: '1',
-      user: {
-        name: 'John Doe',
-        avatar: '/placeholder.svg?height=40&width=40',
-      },
-      content: 'This anime is absolutely amazing! The animation quality and storytelling are top-notch.',
-      createdAt: new Date('2024-01-03T12:00:00'),
-      likes: 15,
-      dislikes: 2,
-      replies: [
-        {
-          id: '1-1',
-          user: {
-            name: 'Alice Smith',
-            avatar: '/placeholder.svg?height=40&width=40',
-          },
-          content: 'I totally agree! The character development is incredible too.',
-          createdAt: new Date('2024-01-03T14:30:00'),
-          likes: 5,
-          dislikes: 0,
+  // Edit and delete state
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [editingComment, setEditingComment] = useState<Comment | null>(null)
+  const [editedContent, setEditedContent] = useState("")
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [commentToDelete, setCommentToDelete] = useState<Comment | null>(null)
+
+  // Fetch comments from API
+  useEffect(() => {
+    const loadComments = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        // If initial comments are provided, use them
+        if (initialComments && initialComments.length > 0) {
+          const convertedComments: Comment[] = initialComments.map((commentObj, index) => ({
+            id: String(commentObj.id || index + 1),
+            userId: String(commentObj.user?.id || commentObj.user_id || ''),
+            user: {
+              name: commentObj.user?.name || `User ${commentObj.user_id || commentObj.id}`,
+              avatar: commentObj.user?.avatar || '/placeholder.svg?height=40&width=40',
+            },
+            content: commentObj.comment || commentObj.content || '',
+            createdAt: commentObj.created_at ? new Date(commentObj.created_at) : new Date(),
+            likes: 0, // API doesn't provide likes yet
+            dislikes: 0, // API doesn't provide dislikes yet
+            replies: [], // API doesn't provide replies yet
+            isSpoiler: false, // API doesn't provide spoiler flag yet
+          }))
+          setComments(convertedComments)
+        } else {
+          // Fetch comments from API if not provided
+          const animeData = await fetchAnimeDetail(animeId)
+          if (animeData.comments && animeData.comments.length > 0) {
+            const convertedComments: Comment[] = animeData.comments.map((commentObj: any, index: number) => ({
+              id: String(commentObj.id || index + 1),
+              userId: String(commentObj.user?.id || commentObj.user_id || ''),
+              user: {
+                name: commentObj.user?.name || `User ${commentObj.user_id || commentObj.id}`,
+                avatar: commentObj.user?.avatar || '/placeholder.svg?height=40&width=40',
+              },
+              content: commentObj.comment || commentObj.content || '',
+              createdAt: commentObj.created_at ? new Date(commentObj.created_at) : new Date(),
+              likes: 0, // API doesn't provide likes yet
+              dislikes: 0, // API doesn't provide dislikes yet
+              replies: [], // API doesn't provide replies yet
+              isSpoiler: false, // API doesn't provide spoiler flag yet
+            }))
+            setComments(convertedComments)
+          } else {
+            setComments([])
+          }
         }
-      ]
-    },
-    {
-      id: '2',
-      user: {
-        name: 'Jane Smith',
-        avatar: '/placeholder.svg?height=40&width=40',
-      },
-      content: 'The main character dies in the final episode! I can\'t believe they did that!',
-      createdAt: new Date('2024-01-02T15:30:00'),
-      likes: 10,
-      dislikes: 1,
-      isSpoiler: true,
-    },
-  ])
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newComment.trim()) return
-    const newCommentObj: Comment = {
-      id: String(comments.length + 1),
-      user: {
-        name: 'Current User',
-        avatar: '/placeholder.svg?height=40&width=40',
-      },
-      content: newComment,
-      createdAt: new Date(),
-      likes: 0,
-      dislikes: 0,
-      isSpoiler: isSpoiler,
+      } catch (err) {
+        console.error('Error loading comments:', err)
+        setError('Failed to load comments')
+        setComments([])
+      } finally {
+        setLoading(false)
+      }
     }
-    setComments([newCommentObj, ...comments])
-    setNewComment('')
-    setIsSpoiler(false)
+
+    if (animeId) {
+      loadComments()
+    }
+  }, [animeId, initialComments])
+
+  const handleSubmit = async (comment: string, isSpoiler: boolean) => {
+    if (!comment.trim()) return
+    
+    try {
+      // Post comment to API
+      const response = await createComment(comment, parseInt(animeId), null)
+      
+      // Add the new comment to the list
+      const newCommentObj: Comment = {
+        id: String(response.id || comments.length + 1),
+        userId: String(response.user?.id || ''),
+        user: {
+          name: 'Current User',
+          avatar: '/placeholder.svg?height=40&width=40',
+        },
+        content: comment,
+        createdAt: new Date(),
+        likes: 0,
+        dislikes: 0,
+        isSpoiler: isSpoiler,
+      }
+      
+      setComments([newCommentObj, ...comments])
+    } catch (error) {
+      console.error('Error posting comment:', error)
+      setError('Failed to post comment')
+    }
   }
 
   const toggleSpoiler = (commentId: string) => {
@@ -115,6 +161,43 @@ export default function Comments({ animeId }: CommentsProps) {
     )
   }
 
+  const openEditDialog = (comment: Comment) => {
+    setEditingComment(comment)
+    setEditedContent(comment.content)
+    setIsEditDialogOpen(true)
+  }
+
+  const handleSaveEdit = async () => {
+    if (editingComment) {
+      try {
+        await updateCommentService(parseInt(editingComment.id), editedContent)
+        setComments(comments.map((c) => (c.id === editingComment.id ? { ...c, content: editedContent } : c)))
+        setIsEditDialogOpen(false)
+      } catch (error) {
+        console.error('Error updating comment:', error)
+        setError('Failed to update comment')
+      }
+    }
+  }
+
+  const openDeleteDialog = (comment: Comment) => {
+    setCommentToDelete(comment)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleDeleteComment = async () => {
+    if (commentToDelete) {
+      try {
+        await deleteCommentService(parseInt(commentToDelete.id))
+        setComments(comments.filter((c) => c.id !== commentToDelete.id))
+        setIsDeleteDialogOpen(false)
+      } catch (error) {
+        console.error('Error deleting comment:', error)
+        setError('Failed to delete comment')
+      }
+    }
+  }
+
   const sortedComments = [...comments].sort((a, b) => {
     if (sortBy === 'newest') return b.createdAt.getTime() - a.createdAt.getTime()
     if (sortBy === 'oldest') return a.createdAt.getTime() - b.createdAt.getTime()
@@ -125,6 +208,7 @@ export default function Comments({ animeId }: CommentsProps) {
   const CommentComponent = ({ comment, depth = 0 }: { comment: Comment, depth?: number }) => {
     const isExpanded = expandedComments.includes(comment.id)
     const hasReplies = comment.replies && comment.replies.length > 0
+    const isCurrentUserComment = comment.userId === currentUser.id
 
     return (
       <motion.div
@@ -140,16 +224,28 @@ export default function Comments({ animeId }: CommentsProps) {
             <AvatarFallback>{comment.user.name[0]}</AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-semibold text-sm">{comment.user.name}</span>
-              <span className="text-xs text-muted-foreground">
-                {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
-              </span>
-              {comment.isSpoiler && (
-                <span className="text-xs bg-red-500/20 text-red-400 dark:text-red-300 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors">
-                  <AlertTriangle className="w-3 h-3" />
-                  Spoiler
+            <div className="flex items-center gap-2 flex-wrap justify-between">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-sm">{comment.user.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  {formatDistanceToNow(comment.createdAt, { addSuffix: true })}
                 </span>
+                {comment.isSpoiler && (
+                  <span className="text-xs bg-red-500/20 text-red-400 dark:text-red-300 px-2 py-0.5 rounded-full flex items-center gap-1 transition-colors">
+                    <AlertTriangle className="w-3 h-3" />
+                    Spoiler
+                  </span>
+                )}
+              </div>
+              {isCurrentUserComment && (
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(comment)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openDeleteDialog(comment)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
             </div>
             {comment.isSpoiler && !revealedSpoilers.includes(comment.id) ? (
@@ -258,44 +354,86 @@ export default function Comments({ animeId }: CommentsProps) {
         </div>
 
         {/* Comment Form */}
-        <div className="bg-card p-4 rounded-lg shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Textarea
-              placeholder="Share your thoughts..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              className="min-h-[100px] resize-none"
-            />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="spoilerToggle"
-                  checked={isSpoiler}
-                  onChange={(e) => setIsSpoiler(e.target.checked)}
-                  className="rounded border-gray-300 text-primary focus:ring-primary"
-                />
-                <label htmlFor="spoilerToggle" className="text-sm text-muted-foreground">
-                  Mark as spoiler
-                </label>
-              </div>
-              <Button type="submit" disabled={!newComment.trim()}>
-                <Send className="w-4 h-4 mr-2" />
-                Post Comment
-              </Button>
-            </div>
-          </form>
-        </div>
+        <CommentForm
+          onSubmit={handleSubmit}
+          loading={loading}
+        />
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
+            {error}
+          </div>
+        )}
 
         {/* Comments List */}
         <div>
-          <AnimatePresence>
-            {sortedComments.map((comment) => (
-              <CommentComponent key={comment.id} comment={comment} />
-            ))}
-          </AnimatePresence>
+          {loading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex gap-3 animate-pulse">
+                  <div className="w-8 h-8 bg-muted rounded-full"></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-muted rounded w-1/4"></div>
+                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <AnimatePresence>
+              {sortedComments.length > 0 ? (
+                sortedComments.map((comment) => (
+                  <CommentComponent key={comment.id} comment={comment} />
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>No comments yet. Be the first to share your thoughts!</p>
+                </div>
+              )}
+            </AnimatePresence>
+          )}
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Comment</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            value={editedContent}
+            onChange={(e) => setEditedContent(e.target.value)}
+            className="min-h-[100px]"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveEdit}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Comment</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to delete this comment? This action cannot be undone.</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteComment}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -7,7 +7,7 @@ export interface Episode {
     summary: string;
     season_id: number;
     video_id: number;
-    duration: number;
+    duration: string;
 }
 
 export interface Season {
@@ -16,26 +16,36 @@ export interface Season {
     episodes: Episode[];
 }
 
+export interface Genre {
+    name: string;
+    pivot: {
+        anime_id: number;
+        genre_id: number;
+    };
+}
+
 export interface AnimeData {
     id: number;
     name: string;
+    slug: string;
     release_date: string;
     imdb_score: number;
     summary: string;
-    genres: string[];
+    genres: Genre[];
     seasons: Season[];
     thumbnail: string;
-    comments: string[];
+    comments: any[];
 }
 
 export const fetchAnimeDetail = async (slug: string): Promise<AnimeData> => {
     try {
         const response = await getAnime(slug);
-        const animeData = response.data;
+        const animeData = response.data.data.anime;
 
         return {
             id: animeData.id,
             name: animeData.name,
+            slug: animeData.slug,
             release_date: animeData.release_date,
             imdb_score: Number(animeData.imdb_score) || 0,
             summary: animeData.summary,
@@ -49,3 +59,4 @@ export const fetchAnimeDetail = async (slug: string): Promise<AnimeData> => {
         throw error;
     }
 };
+
