@@ -59,8 +59,8 @@ export default function HelpPage() {
             Destek ekibimiz size yardımcı olmak için hazır. Aşağıdaki yöntemlerle bize ulaşabilirsiniz:
           </p>
           <ul className="list-disc pl-5 space-y-2">
-            <li>E-posta: destek@animestream.com</li>
-            <li>Telefon: +90 212 345 67 89 (Hafta içi 09:00 - 18:00)</li>
+            <li>E-posta: contact.turkanime@gmail.com</li>
+            <li>Telefon: +90 *** *** ** ** (Hafta içi 09:00 - 18:00)</li>
             <li>Canlı Destek: Sağ alt köşedeki sohbet simgesine tıklayın</li>
           </ul>
         </CardContent>
