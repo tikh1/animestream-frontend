@@ -8,65 +8,14 @@ import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Star } from "lucide-react"
 import useEmblaCarousel from "embla-carousel-react"
 import { AnimeCard } from "@/components/AnimeCard"
-
-const newReleases = [
-  {
-    id: 1,
-    title: "Chainsaw Man",
-    image: "/placeholder.svg?height=400&width=300&text=Chainsaw+Man",
-    releaseDate: "October 2022",
-    genre: ["Action", "Supernatural", "Horror", "Dark Fantasy", "Comedy", "Gore", "Demons"],
-    rating: 8.7,
-    seasons: 1,
-  },
-  {
-    id: 2,
-    title: "Spy x Family Part 2",
-    image: "/placeholder.svg?height=400&width=300&text=Spy+x+Family",
-    releaseDate: "October 2022",
-    genre: ["Action", "Comedy", "Slice of Life", "Shounen", "Family", "Espionage", "Supernatural"],
-    rating: 8.9,
-    seasons: 2,
-  },
-  {
-    id: 3,
-    title: "Bleach: Thousand-Year Blood War",
-    image: "/placeholder.svg?height=400&width=300&text=Bleach",
-    releaseDate: "October 2022",
-    genre: ["Action", "Supernatural", "Adventure", "Shounen", "Fantasy", "Swordplay", "Afterlife"],
-    rating: 9.1,
-    seasons: 17,
-  },
-  {
-    id: 4,
-    title: "My Hero Academia Season 6",
-    image: "/placeholder.svg?height=400&width=300&text=My+Hero+Academia",
-    releaseDate: "October 2022",
-    genre: ["Superhero", "Action", "School", "Shounen", "Comedy", "Drama", "Superpowers"],
-    rating: 8.4,
-    seasons: 6,
-  },
-  {
-    id: 5,
-    title: "Blue Lock",
-    image: "/placeholder.svg?height=400&width=300&text=Blue+Lock",
-    releaseDate: "October 2022",
-    genre: ["Sports", "Psychological", "Shounen", "Team Sports", "Drama", "Competition", "Football"],
-    rating: 8.3,
-    seasons: 1,
-  },
-  {
-    id: 6,
-    title: "Mob Psycho 100 III",
-    image: "/placeholder.svg?height=400&width=300&text=Mob+Psycho+100",
-    releaseDate: "October 2022",
-    genre: ["Action", "Comedy", "Supernatural", "Psychological", "Slice of Life", "Psychic", "School"],
-    rating: 8.8,
-    seasons: 3,
-  },
-]
+import fetchAnimeList from "@/services/anime/anime_list"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function NewReleases() {
+  const [animes, setAnimes] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
   const [emblaRef, emblaApi] = useEmblaCarousel({
     loop: true,
     align: "start",
@@ -78,17 +27,68 @@ export default function NewReleases() {
   const scrollPrev = () => emblaApi && emblaApi.scrollPrev()
   const scrollNext = () => emblaApi && emblaApi.scrollNext()
 
-  const onSelect = () => {
+  const onSelect = useCallback(() => {
     if (!emblaApi) return
     setCanScrollPrev(emblaApi.canScrollPrev())
     setCanScrollNext(emblaApi.canScrollNext())
-  }
+  }, [emblaApi])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const data = await fetchAnimeList()
+        // Sort by rating to get the best anime first, then take the first 6
+        const sortedAnimes = data
+          .sort((a: any, b: any) => b.rating - a.rating)
+          .slice(0, 6)
+        setAnimes(sortedAnimes)
+      } catch (err) {
+        setError('Anime verileri yüklenirken hata oluştu')
+        console.error('New releases fetch error:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   useEffect(() => {
     if (!emblaApi) return
     onSelect()
     emblaApi.on("select", onSelect)
-  }, [emblaApi, onSelect]) // Added onSelect to dependencies
+  }, [emblaApi, onSelect])
+
+  if (loading) {
+    return (
+      <section className="py-8 sm:py-12">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">New Releases</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(6)].map((_, index) => (
+              <div key={index} className="flex">
+                <Skeleton className="w-full h-80 rounded-lg" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (error) {
+    return (
+      <section className="py-8 sm:py-12">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">New Releases</h2>
+          <div className="text-center text-red-500">
+            {error}
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="py-8 sm:py-12">
@@ -97,7 +97,7 @@ export default function NewReleases() {
         <div className="relative">
           <div className="overflow-hidden mx-auto" ref={emblaRef}>
             <div className="flex -ml-4">
-              {newReleases.map((anime) => (
+              {animes.map((anime) => (
                 <div
                   key={anime.id}
                   className="flex-[0_0_85%] min-w-0 pl-4 sm:flex-[0_0_45%] md:flex-[0_0_33.333%] lg:flex-[0_0_25%]"
@@ -105,16 +105,16 @@ export default function NewReleases() {
                   <AnimeCard
                     anime={{
                       id: anime.id,
-                      title: anime.title,
+                      name: anime.name,
+                      slug: anime.slug,
                       genre: anime.genre,
                       rating: anime.rating,
-                      image: anime.image,
+                      thumbnail: anime.thumbnail,
                       status: "New",
-                      year: new Date(anime.releaseDate).getFullYear(),
+                      year: anime.year,
                     }}
                     variant="default"
                     showStatus={false}
-                    maxGenres={4}
                   />
                 </div>
               ))}

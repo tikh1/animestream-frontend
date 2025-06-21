@@ -31,6 +31,8 @@ const fetchAnimeList = async () => {
     const response = await getAnimes();
     const animelistData = response.data.data.animes;
     
+    console.log('Raw API Response:', animelistData) // Debug için
+    
     return animelistData.map((anime: any) => ({
       id: anime.id,
       slug: anime.slug,

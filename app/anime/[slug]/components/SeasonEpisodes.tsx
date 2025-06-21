@@ -50,7 +50,7 @@ export default function SeasonEpisodes({ animeId, seasons: apiSeasons }: SeasonE
       id: episodeIndex + 1,
       episode_slug: episode.slug,
       title: episode.name,
-      thumbnail: "/placeholder.svg?height=180&width=320&text=EP" + episode.id.toString().padStart(2, "0"),
+      thumbnail: episode.thumbnail || "/placeholder.svg?height=180&width=320&text=EP" + episode.id.toString().padStart(2, "0"),
       duration: episode.duration,
       progress: 0,
     }))

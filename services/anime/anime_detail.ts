@@ -8,6 +8,7 @@ export interface Episode {
     season_id: number;
     video_id: number;
     duration: string;
+    thumbnail: string;
 }
 
 export interface Season {
