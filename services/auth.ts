@@ -29,7 +29,7 @@ export const login = async (email: string, password: string) => {
 
 export const register = async (email: string, name: string, password: string, confirmPassword: string) => {
   try {
-    const response = await registerApi({ email, name, password });
+    const response = await registerApi({ email, name, password, confirmPassword });
     const data = response.data;
     const token = data.data.token;
     const roles = data.data.roles?.map((role: any) => role.name) || [];
