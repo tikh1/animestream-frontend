@@ -19,7 +19,6 @@ export const login = async (email: string, password: string) => {
     localStorage.setItem('roles', JSON.stringify(roles));
     localStorage.setItem('user', data.data.user.name);
 
-    await fetchAndStoreUser(token);
     return data;
   } catch (error) {
     console.error('Giriş hatası:', error);
@@ -38,7 +37,6 @@ export const register = async (email: string, name: string, password: string, pa
     localStorage.setItem('roles', JSON.stringify(roles));
     localStorage.setItem('user', data.data.user.name);
 
-    await fetchAndStoreUser(token);
     return data;
   } catch (error) {
     console.error('Kayıt hatası:', error);
@@ -59,19 +57,6 @@ export const me = async (token: string): Promise<User> => {
     roles: roles?.map((role: any) => role.name) || [],
     avatar: avatar || '',
   };
-};
-
-const fetchAndStoreUser = async (token: string) => {
-  try {
-    const userData = await me(token);
-    const { name, email, roles, avatar } = userData;
-
-    localStorage.setItem('user', name);
-    localStorage.setItem('email', email);
-    localStorage.setItem('roles', JSON.stringify(roles));
-  } catch (error) {
-    console.error('Kullanıcı bilgisi alınamadı:', error);
-  }
 };
 
 export const logout = () => {
