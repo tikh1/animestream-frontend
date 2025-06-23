@@ -11,7 +11,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 export const login = (credentials: { email: string; password: string }) => 
   api.post(`${API_BASE}/login`, credentials);
 
-export const register = (userData: { name: string; email: string; password: string; confirmPassword: string }) => 
+export const register = (userData: { name: string; email: string; password: string; password_confirmation: string }) => 
   api.post(`${API_BASE}/register`, userData);
 
 // User endpoints
